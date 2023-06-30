@@ -12,7 +12,7 @@ def sub_callback_range(sub_msg: Range):
         range = sub_msg.range
 
         rospy.loginfo(sub_msg)
-        rospy.loginfo(f"Current range is {}", range)
+        rospy.loginfo("Current range is: ", range)
 
         range_received = True
 
@@ -22,7 +22,7 @@ def sub_callback_PointCloud(sub_msg: PointCloud2):
         data_length = len(data)
 
         rospy.loginfo(sub_msg)
-        rospy.loginfo(f"Length of data is {}", data_length)
+        rospy.loginfo("Length of data is: ", data_length)
 
         pointCloud_received = True
 
