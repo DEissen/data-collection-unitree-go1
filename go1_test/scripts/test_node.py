@@ -26,7 +26,11 @@ def sub_callback_PointCloud(sub_msg: PointCloud2):
     timestamp = time.strftime("%H-%M-%S")
     with open(f'PointCloud_{timestamp}.txt', 'w') as f:
         for data in cloud:
-            f.write(str(data) + "\n")
+            data_to_write = str(data)
+            data_to_write.replace("(", "")
+            data_to_write.replace(")", "")
+            data_to_write.replace(" ", "")
+            f.write(data_to_write + "\n")
         
 
 if __name__ == "__main__":
