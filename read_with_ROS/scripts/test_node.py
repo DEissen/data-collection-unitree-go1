@@ -21,6 +21,7 @@ def sub_callback_range(sub_msg: Range):
     sys.exit(0)
 
 def sub_callback_PointCloud(sub_msg: PointCloud2):
+    print("PointCloud Callback was called!")
     cloud = pc2.read_points(sub_msg)
     i = 0
     timestamp = time.strftime("%H-%M-%S")

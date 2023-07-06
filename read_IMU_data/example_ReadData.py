@@ -15,6 +15,8 @@ if __name__ == '__main__':
     info_printed_once = False
     start_logging = False
     show_print = False
+    # all data seems to be sampled with 50 Hz (9 - 10 equal measurements when sleep_in_seconds is 0.002) 
+    # => use at least 0.01 as sleep_in_seconds 
     sleep_in_seconds = 0.002
 
     HIGHLEVEL = 0xee
