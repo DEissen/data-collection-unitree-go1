@@ -8,9 +8,6 @@ import rospy
 from sensor_msgs.msg import PointCloud2, Range, PointField
 import sensor_msgs.point_cloud2 as pc2
 
-range_received = False
-pointCloud_received = False
-
 def sub_callback_range(sub_msg: Range):
     range = sub_msg.range
 
@@ -22,7 +19,6 @@ def sub_callback_range(sub_msg: Range):
 
 def sub_callback_PointCloud(sub_msg: PointCloud2):
     cloud = pc2.read_points(sub_msg)
-    i = 0
     timestamp = time.strftime("%H-%M-%S")
     with open(f'PointCloud_{timestamp}.txt', 'w') as f:
         for data in cloud:
