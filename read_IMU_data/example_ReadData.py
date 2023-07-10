@@ -19,6 +19,8 @@ if __name__ == '__main__':
     # => use at least 0.01 as sleep_in_seconds 
     sleep_in_seconds = 0.002
 
+    measurement_time = 30
+
     HIGHLEVEL = 0xee
     LOWLEVEL  = 0xff
 
@@ -118,7 +120,7 @@ if __name__ == '__main__':
         cmd.yawSpeed = 0.0
         cmd.reserve = 0
 
-        if motiontime > 15 / sleep_in_seconds:
+        if motiontime > measurement_time / sleep_in_seconds:
             # convert the arrays and save them
             mode_ar = np.asarray(mode_ar)
             np.savetxt("logged_data/mode.csv", mode_ar, delimiter=";")
