@@ -12,19 +12,19 @@ import robot_interface as sdk
 
 if __name__ == '__main__':
     # initialize some variables
+    runCounter = 0
     info_printed_once = False
     start_logging = False
     show_print = False
     # all data seems to be sampled with 50 Hz (9 - 10 equal measurements when sleep_in_seconds is 0.002) 
     # => use at least 0.01 as sleep_in_seconds 
     sleep_in_seconds = 0.002
-
     measurement_time = 30
 
     HIGHLEVEL = 0xee
     LOWLEVEL  = 0xff
 
-    # arrays to log the stuff
+    # arrays to log the data
     mode_ar = []
     bodyHeight_ar = []
     footRaiseHeight_ar = []
@@ -49,16 +49,14 @@ if __name__ == '__main__':
     state = sdk.HighState()
     udp.InitCmdData(cmd)
 
-    motiontime = 0
     while True:
         time.sleep(sleep_in_seconds)
-        motiontime = motiontime + 1
 
         udp.Recv()
         udp.GetRecv(state)
         
         # print general info once at the beginning after a short waiting time
-        if not info_printed_once and motiontime > 1 / sleep_in_seconds:
+        if not info_printed_once and runCounter > 1 / sleep_in_seconds:
             print(f"Header = {state.head}")
             print(f"levelFlag = {state.levelFlag}")
             print(f"frameReserve = {state.frameReserve}")
@@ -72,7 +70,7 @@ if __name__ == '__main__':
         # log everything that seems to be interesting every iteration after general info was logged once
         if start_logging:
             if show_print:
-                print(f"logging for step {motiontime}")
+                print(f"logging for step {runCounter}")
                 print(f"mode = {state.mode}")
                 print(f"bodyHeight = {round(state.bodyHeight, 6)}")
                 print(f"footRaiseHeight = {round(state.footRaiseHeight, 6)}")
@@ -102,7 +100,6 @@ if __name__ == '__main__':
             yawSpeed_ar.append(state.yawSpeed)
             footForce_ar.append([state.footForce[0], state.footForce[1], state.footForce[2], state.footForce[3]])
             velocity_ar.append([state.velocity[0], state.velocity[1], state.velocity[2]])
-
             gyroscope_ar.append([state.imu.gyroscope[0],state.imu.gyroscope[1],state.imu.gyroscope[2]])
             accelerometer_ar.append([state.imu.accelerometer[0],state.imu.accelerometer[1],state.imu.accelerometer[2]])
             rpy_ar.append([state.imu.rpy[0],state.imu.rpy[1],state.imu.rpy[2]])
@@ -120,7 +117,7 @@ if __name__ == '__main__':
         cmd.yawSpeed = 0.0
         cmd.reserve = 0
 
-        if motiontime > measurement_time / sleep_in_seconds:
+        if runCounter > measurement_time / sleep_in_seconds:
             # convert the arrays and save them
             mode_ar = np.asarray(mode_ar)
             np.savetxt("logged_data/mode.csv", mode_ar, delimiter=";")
@@ -156,3 +153,5 @@ if __name__ == '__main__':
      
         udp.SetSend(cmd)
         udp.Send()
+
+        runCounter = runCounter + 1
