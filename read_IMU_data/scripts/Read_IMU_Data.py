@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # all data seems to be sampled with 50 Hz (9 - 10 equal measurements when sleep_in_seconds is 0.002) 
     # => use at least 0.01 as sleep_in_seconds 
     sleep_in_seconds = 0.002
-    measurement_time = 30
+    measurement_time = 5
 
     HIGHLEVEL = 0xee
     LOWLEVEL  = 0xff
