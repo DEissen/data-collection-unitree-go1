@@ -18,7 +18,6 @@ def sub_callback_range(sub_msg: Range):
     rospy.loginfo("Messages received. Node \"test_node\" will be closed.")
     sys.exit(0)
 
-
 def sub_callback_PointCloud(sub_msg: PointCloud2):
     rospy.loginfo("Recieved point cloud")
     cloud = pc2.read_points(sub_msg)
@@ -26,23 +25,15 @@ def sub_callback_PointCloud(sub_msg: PointCloud2):
 
     data_arr = []
 
-    with open(f'PointCloud_{timestamp}.txt', 'w') as f:
-        for data in cloud:
-            # method one: write directly to file
-            data_to_write = str(data)
-            # data_to_write.replace("(", "") # did not work!
-            # data_to_write.replace(")", "")
-            # data_to_write.replace(" ", "")
-            f.write(data_to_write + "\n")
-
-            # method two: append to array and save it afterwards
-            data_arr.append(data)
+    for data in cloud:
+        data_arr.append(data)
 
     # save array in pcd format by converting it to a numpy array first
     data_arr = np.asarray(data_arr)
     length = np.shape(data_arr)[0]
+    rospy.loginfo(f"length {length}, from message {sub_msg.width}") # is equal!
     pcd_file_header = f"# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\nWIDTH {length}\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS {length}\nDATA ascii"
-    np.savetxt(f'PointCloud_np_{timestamp}.txt', data_arr,
+    np.savetxt(f'PointCloud_{timestamp}_{sub_msg.header.seq}.txt', data_arr,
                delimiter=" ", fmt="%1.5f", comments="", header=pcd_file_header)
 
 
