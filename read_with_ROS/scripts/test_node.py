@@ -20,8 +20,6 @@ def sub_callback_range(sub_msg: Range):
 
 
 def sub_callback_PointCloud(sub_msg: PointCloud2):
-    pcd_file_header = "# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\nWIDTH 251\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS 251\nDATA ascii"
-
     cloud = pc2.read_points(sub_msg)
     timestamp = time.strftime("%H-%M-%S")
 
@@ -41,6 +39,8 @@ def sub_callback_PointCloud(sub_msg: PointCloud2):
 
     # save array in pcd format by converting it to a numpy array first
     data_arr = np.asarray(data_arr)
+    length = np.shape(data_arr)[0]
+    pcd_file_header = f"# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\nWIDTH {length}\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS {length}\nDATA ascii"
     np.savetxt(f'PointCloud_np_{timestamp}.txt', data_arr,
                delimiter=" ", fmt="%1.5f", comments="", header=pcd_file_header)
 
