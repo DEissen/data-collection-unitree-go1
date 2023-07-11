@@ -20,6 +20,7 @@ def sub_callback_range(sub_msg: Range):
 
 
 def sub_callback_PointCloud(sub_msg: PointCloud2):
+    rospy.loginfo("Recieved point cloud")
     cloud = pc2.read_points(sub_msg)
     timestamp = time.strftime("%H-%M-%S")
 
