@@ -17,7 +17,7 @@ class Camera_PointCloud_Subscriber:
 
         # create folder for results (if it does not exist yet)
         measurement_timestamp = time.strftime("%H_%M_%S")
-        self.data_dir = f"./measurement{measurement_timestamp}/cam{self.camera_id}_pointClouds"
+        self.data_dir = f"./measurement_{measurement_timestamp}/cam{self.camera_id}_pointClouds"
         os.makedirs(self.data_dir, exist_ok=True)
 
         # create callback
@@ -96,5 +96,5 @@ def get_single_pointCloud_by_ID(camera_ID):
 
 
 if __name__ == "__main__":
-    # get_all_pointClouds()
-    get_single_pointCloud_by_ID(1)
+    get_all_pointClouds()
+    # get_single_pointCloud_by_ID(1)
