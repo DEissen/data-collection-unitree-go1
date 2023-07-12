@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
-import robot_interface as sdk
 import sys
 import time
 import os
 import socket
 import numpy as np
 
+# might needed to be changed to "../lib/python/arm64" on other system
 sys.path.append('../lib/python/amd64')
+import robot_interface as sdk  # nopep8
 
 
 def read_IMU_data():
@@ -124,7 +125,7 @@ def read_IMU_data():
             temperature_ar.append(state.imu.temperature)
 
         # log in the specified interval
-        if (measurement_duration / sleep_in_seconds) % log_interval == 0:
+        if start_logging and ((runCounter / sleep_in_seconds) % log_interval == 0):
             # convert the lists to numpy arrays and save them
             mode_ar = np.asarray(mode_ar)
             np.savetxt(os.path.join(mode_data_dir,
