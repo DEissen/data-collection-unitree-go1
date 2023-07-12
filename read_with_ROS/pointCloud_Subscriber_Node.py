@@ -2,6 +2,8 @@
 import sys
 import numpy as np
 import time
+import os
+from os import path
 
 import rospy
 from sensor_msgs.msg import PointCloud2, Range, PointField
@@ -12,6 +14,11 @@ class Camera_PointCloud_Subscriber:
     def __init__(self, camera_id, add_debug_infos):
         self.camera_id = camera_id
         self.add_debug_infos = add_debug_infos
+
+        # create folder for results (if it does not exist yet)
+        measurement_timestamp = time.strftime("%H_%M_%S")
+        self.data_dir = f"./measurement{measurement_timestamp}/cam{self.camera_id}_pointClouds"
+        os.makedirs(self.data_dir, exist_ok=True)
 
         # create callback
         topic_name = f"/camera{self.camera_id}/point_cloud_face"
@@ -47,16 +54,19 @@ class Camera_PointCloud_Subscriber:
         length = np.shape(data_arr)[0]
         pcd_file_header = f"# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z rgb\nSIZE 4 4 4 4\nTYPE F F F F\nCOUNT 1 1 1 1\nWIDTH {length}\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS {length}\nDATA ascii"
         
-        np.savetxt(f'cam{self.camera_id}_{timestamp}_{sub_msg.header.seq}.pcd', data_arr,
-                   delimiter=" ", fmt="%1.5f", comments="", header=pcd_file_header)
+        np.savetxt(os.path.join(self.data_dir, f'cam{self.camera_id}_{timestamp}_{sub_msg.header.seq}.pcd'), data_arr,
+                   delimiter=" ", fmt=["%.10f", "%.10f", "%.10f", "%.10e"], comments="", header=pcd_file_header)
 
         rospy.loginfo(f"Recieved and stored point cloud {sub_msg.header.seq}")
 
-
-if __name__ == "__main__":
+def get_all_pointClouds():
+    """
+        Function to get all data from all cameras in parallel.
+        NOTE: This function contains an infinite loop!
+    """
     # init node and log start
-    rospy.init_node("test_node")
-    rospy.loginfo("Node \"test_node\" started")
+    rospy.init_node("pointCloud_Subscriber_Node")
+    rospy.loginfo("Node \"pointCloud_Subscriber_Node\" started")
 
     camera1_pointCloud_sub = Camera_PointCloud_Subscriber(1, True)
     camera2_pointCloud_sub = Camera_PointCloud_Subscriber(2, True)
@@ -68,3 +78,23 @@ if __name__ == "__main__":
 
     while not rospy.is_shutdown():
         rate.sleep()
+
+def get_single_pointCloud_by_ID(camera_ID):
+    """
+        Function to get PointCloud from specific camera.
+        NOTE: This function contains an infinite loop!
+    """
+    # init node and log start
+    rospy.init_node("pointCloud_Subscriber_Node")
+    rospy.loginfo("Node \"pointCloud_Subscriber_Node\" started")
+
+    camera_pointCloud_sub = Camera_PointCloud_Subscriber(camera_ID, True)
+    rate = rospy.Rate(5)
+
+    while not rospy.is_shutdown():
+        rate.sleep()
+
+
+if __name__ == "__main__":
+    # get_all_pointClouds()
+    get_single_pointCloud_by_ID(1)
