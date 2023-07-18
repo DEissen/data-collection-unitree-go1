@@ -45,7 +45,7 @@ def read_IMU_data():
     mode_data_dir, bodyHeight_data_dir, footRaiseHeight_data_dir, yawSpeed_data_dir, footForce_data_dir, velocity_data_dir, gyroscope_data_dir, accelerometer_data_dir, rpy_data_dir, temperature_data_dir = create_measurement_folder()
 
     # set to True when LAN is used and to False if WLAN is used
-    use_LAN = true
+    use_LAN = True
 
     if use_LAN:
         udp = sdk.UDP(HIGHLEVEL, 8080, "192.168.123.161", 8082)
