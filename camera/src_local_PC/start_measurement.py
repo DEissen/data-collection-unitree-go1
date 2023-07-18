@@ -10,6 +10,8 @@ def execute_command_via_ssh(ip_addr, pwd, command):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(ip_addr, username='unitree', password=pwd)
 
+    # path to kill processes file: unitree@192.168.123.14:/home/unitree/Documents
+
     # Execute command. The triggered process will be automatically ended in case the SSH connection is closed
     stdin, stdout, stderr = client.exec_command(command, get_pty=True)
 
