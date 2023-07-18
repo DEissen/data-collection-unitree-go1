@@ -15,12 +15,10 @@ std::string getMeasurementDirName(std::string base_path)
    // get timestamp for path
    auto const now = std::chrono::system_clock::now();
    auto in_time_t = std::chrono::system_clock::to_time_t(now);
-   auto transformed = now.time_since_epoch().count() / 1000000;
-   auto millis = transformed % 1000;
 
    // create pathname and return it
    std::stringstream path;
-   path << base_path << "measurement_" << std::put_time(std::localtime(&in_time_t), "%d_%m__%H_%M") << int(millis);
+   path << base_path << "measurement_" << std::put_time(std::localtime(&in_time_t), "%d_%m__%H_%M");
    return path.str();
 }
 
