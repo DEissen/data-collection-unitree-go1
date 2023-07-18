@@ -3,11 +3,13 @@
 import sys
 import time
 import os
-import socket
 import numpy as np
 
-# might needed to be changed to "../lib/python/arm64" on other system
-sys.path.append('../lib/python/amd64')
+# get path to robot_interface lib from Unitree
+file_dir = os.path.dirname(os.path.abspath(__file__))
+path_to_append = os.path.join(file_dir, os.pardir, "lib/python/amd64") # last part might needed to be changed to "../lib/python/arm64" on other system
+
+sys.path.append(path_to_append)
 import robot_interface as sdk  # nopep8
 
 
@@ -19,7 +21,7 @@ def read_IMU_data():
     show_print = False
     # all data seems to be sampled with 50 Hz (9 - 10 equal measurements when sleep_in_seconds is 0.002)
     # => use at least 0.01 as sleep_in_seconds
-    sleep_in_seconds = 0.002
+    sleep_in_seconds = 0.01
     measurement_duration = 60
     log_interval = 10
     measurement_timestamp = 0
@@ -42,11 +44,10 @@ def read_IMU_data():
     # create measurement directory and get paths for the sensors
     mode_data_dir, bodyHeight_data_dir, footRaiseHeight_data_dir, yawSpeed_data_dir, footForce_data_dir, velocity_data_dir, gyroscope_data_dir, accelerometer_data_dir, rpy_data_dir, temperature_data_dir = create_measurement_folder()
 
-    # check own IP adress to determine IP adress for udp communication
-    hostname = socket.gethostname()
-    ip_addr = socket.gethostbyname(hostname)
+    # set to True when LAN is used and to False if WLAN is used
+    use_LAN = true
 
-    if "192.168.123" in ip_addr:
+    if use_LAN:
         udp = sdk.UDP(HIGHLEVEL, 8080, "192.168.123.161", 8082)
     else:
         udp = sdk.UDP(HIGHLEVEL, 8080, "192.168.12.1", 8082)
@@ -125,7 +126,7 @@ def read_IMU_data():
             temperature_ar.append(state.imu.temperature)
 
         # log in the specified interval
-        if start_logging and ((runCounter / sleep_in_seconds) % log_interval == 0):
+        if start_logging and ((runCounter * sleep_in_seconds) % log_interval == 0):
             # convert the lists to numpy arrays and save them
             mode_ar = np.asarray(mode_ar)
             np.savetxt(os.path.join(mode_data_dir,
