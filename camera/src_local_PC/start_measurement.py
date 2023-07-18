@@ -1,5 +1,6 @@
 import paramiko
 import threading
+import time
 
 def execute_command_via_ssh(ip_addr, pwd, command):
     """
@@ -29,17 +30,21 @@ def start_camera_measurement_via_ssh(ip_last_segment):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(f"192.168.123.{ip_last_segment}", username='unitree', password="123")
 
-    # kill camera processes by executing killCameraProcesses.sh on the Nanos
-    stdin, stdout, stderr = client.exec_command("/home/unitree/Documents/killCameraProcesses.sh", get_pty=True)
-
-    # change directory to UnitreeCameraSdk
-    stdin, stdout, stderr = client.exec_command("cd /home/unitree/Unitree/sdk/UnitreeCameraSdk", get_pty=True)
-
+    
+    commands = [] # list for all commands, as they must be sent at once to keep the same shell for it
+    commands.append("/home/unitree/Documents/killCameraProcesses.sh") # command to kill camera processes by executing killCameraProcesses.sh on the Nanos
+    commands.append("cd /home/unitree/Unitree/sdk/UnitreeCameraSdk") # command to change directory to UnitreeCameraSdk
+    
+    # append command to execute camera executable
     if ip_last_segment == 15:
         # Nano with IP 15 has only one camera
-        stdin, stdout, stderr = client.exec_command("./bins/getFrameOneCamera", get_pty=True) 
+        commands.append("./bins/getFrameOneCamera")
     else:
-        stdin, stdout, stderr = client.exec_command("./bins/getFrameTwoCameras", get_pty=True) 
+        commands.append("./bins/getFrameTwoCameras")
+
+    # prepare command string and execute the commands
+    command_string = "; ".join(commands)
+    stdin, stdout, stderr = client.exec_command(command_string, get_pty=True) 
 
     # print output of process
     for line in stdout:
@@ -49,9 +54,9 @@ def start_camera_measurement_via_ssh(ip_last_segment):
 
 
 if __name__ == "__main__":
-    Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=("13", ))
-    Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=("14", ))
-    Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=("15", ))
+    Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, ))
+    Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, ))
+    Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, ))
 
     Nano13_thread.start()
     Nano14_thread.start()
