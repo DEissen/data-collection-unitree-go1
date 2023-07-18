@@ -11,19 +11,29 @@ def copy_captured_images(ip_last_segment, destination):
     print(f"Start copy measurement files from Nano {ip_last_segment}")
     p = subprocess.Popen(["scp", "-r", target, destination])
     sts = os.waitpid(p.pid, 0)
-    print("Copying finished successfully!")
+    print("Copying finished")
 
-def copy_captured_images_with_sshpass(ip_last_segment, destination):
+def copy_captured_images_with_sshpass(ip_last_segment, destination, delete_files_on_remote=False):
     """
         Function to copy measurement data from a Unitree Go1 Nano to destination.
+        TODO: Update docstring
         NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
     """
-    target = f"unitree@192.168.123.{ip_last_segment}:/home/unitree/Unitree/sdk/UnitreeCameraSdk/data/"
+    ssh_target = f"unitree@192.168.123.{ip_last_segment}"
+    target_dir = "/home/unitree/Unitree/sdk/UnitreeCameraSdk/data/"
+    target = ssh_target + ":" + target_dir
     
     print(f"Start copy measurement files from Nano {ip_last_segment}")
     p = subprocess.Popen(["sshpass", "-p", "123", "scp", "-r", target, destination])
     sts = os.waitpid(p.pid, 0)
-    print("Copying finished successfully!")
+
+    if delete_files_on_remote:
+        p = subprocess.Popen(["sshpass", "-p", "123", "ssh", ssh_target, "rm", "-r", target_dir])
+        sts = os.waitpid(p.pid, 0)
+        print("Copying (including removing files on remote) finished")
+    else:
+        print("Copying finished")
+
 
 if __name__ == "__main__":
     destination = "/home/eissen/measurements"
@@ -32,6 +42,6 @@ if __name__ == "__main__":
     # copy_captured_images(14, destination)
     # copy_captured_images(15, destination)
 
-    copy_captured_images_with_sshpass(13, destination)
-    copy_captured_images_with_sshpass(14, destination)
-    copy_captured_images_with_sshpass(15, destination)
+    copy_captured_images_with_sshpass(13, destination, True)
+    copy_captured_images_with_sshpass(14, destination, True)
+    copy_captured_images_with_sshpass(15, destination, True)
