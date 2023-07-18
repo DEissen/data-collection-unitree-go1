@@ -8,8 +8,8 @@
 #include <sys/stat.h>  // for mkdir
 
 auto g_base_path = "./data/";
-auto g_NameCam1 = "ChinCam";
-auto g_NameCam2 = "HeadCam";
+auto g_NameCam1 = "ChinCam"; // "ChinCam" for 13 and "RightCam" for 14
+auto g_NameCam2 = "HeadCam"; // "HeadCam" for 13 and "LeftCam" for 14
 
 std::string getMeasurementDirName(std::string base_path)
 {
@@ -20,6 +20,7 @@ std::string getMeasurementDirName(std::string base_path)
    // create pathname and return it
    std::stringstream path;
    path << base_path << "measurement_" << std::put_time(std::localtime(&in_time_t), "%d_%m__%H_%M");
+   return path.str();
 }
 
 std::string createMeasurementDir()
@@ -65,12 +66,12 @@ std::string createMeasurementDir()
                 << std::endl;
    }
 
-   return cam1Path, cam2Path;
+   return measurement_path;
 }
 
 int main(int argc, char* argv[])
 {
-   std::string cam1Path, cam2Path = createMeasurementDir();
+   std::string measurement_path = createMeasurementDir();
 
    int deviceNode1 = 0;  // 0 -> /dev/video0
    int deviceNode2 = 1;  // 1 -> /dev/video1
@@ -138,15 +139,15 @@ int main(int argc, char* argv[])
       frameCam1(cv::Rect(0, 0, frameCam1.size().width / 2, frameCam1.size().height)).copyTo(rigthCam1);
       frameCam1(cv::Rect(frameCam1.size().width / 2, 0, frameCam1.size().width / 2, frameCam1.size().height))
           .copyTo(leftCam1);
-      cv::imwrite(cam1Path + "/Right_" + datetime.str() + ".jpg", rigthCam1);
-      cv::imwrite(cam1Path + "/Left_" + datetime.str() + ".jpg", leftCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rigthCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Left_" + datetime.str() + ".jpg", leftCam1);
 
       cv::Mat leftCam2, rigthCam2;
       frameCam2(cv::Rect(0, 0, frameCam2.size().width / 2, frameCam2.size().height)).copyTo(rigthCam2);
       frameCam2(cv::Rect(frameCam2.size().width / 2, 0, frameCam2.size().width / 2, frameCam2.size().height))
           .copyTo(leftCam2);
-      cv::imwrite(cam2Path + "/Right_" + datetime.str() + ".jpg", rigthCam2);
-      cv::imwrite(cam2Path + "/Left_" + datetime.str() + ".jpg", leftCam2);
+      cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rigthCam2);
+      cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
    }
 
    // stop camera capturing
