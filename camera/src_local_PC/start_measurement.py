@@ -1,6 +1,7 @@
 import paramiko
 import threading
 import time
+import subprocess
 
 def execute_command_via_ssh(ip_addr, pwd, command):
     """
@@ -53,7 +54,45 @@ def start_camera_measurement_via_ssh(ip_last_segment):
     client.close()
 
 
+def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source, ip_time_source):
+    """
+        TODO: Update docstring
+        NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
+    """
+    ssh_target = f"unitree@192.168.123.{target_ip_last_segment}"
+    date_format = f'--set="$(ssh {user_time_source}@{ip_time_source} date \\"+%C%y-%m-%d %H:%M:%S\\")"'
+
+    print(f"Set clock for Nano {target_ip_last_segment}")
+    p = subprocess.Popen(["sshpass", "-p", "123", "ssh", ssh_target, "sudo", "date", date_format])
+    sts = os.waitpid(p.pid, 0)
+
+def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
+    """
+        TODO: Update docstring
+        NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
+    """
+    ssh_target = f"pi@192.168.123.161"
+    date_format = f'--set="$(ssh {user_time_source}@{ip_time_source} date \\"+%C%y-%m-%d %H:%M:%S\\")"'
+
+    print(f"Set clock for Pi")
+    p = subprocess.Popen(["sshpass", "-p", "123", "ssh", ssh_target, "sudo", "date", date_format])
+    sts = os.waitpid(p.pid, 0)
+
+
+
 if __name__ == "__main__":
+    # variables for setting time
+    set_time = False
+    user_time_source = "eissen"
+    ip_time_source = "192.168.123.52"
+
+    # first set time for all µCs if selected by set_time flag
+    if set_time:
+        set_time_via_ssh_for_Nano(13, user_time_source, ip_time_source)
+        set_time_via_ssh_for_Nano(14, user_time_source, ip_time_source)
+        set_time_via_ssh_for_Nano(15, user_time_source, ip_time_source)
+        set_time_via_ssh_for_PI(user_time_source, ip_time_source)
+
     Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, ))
     Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, ))
     Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, ))
