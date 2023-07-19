@@ -5,17 +5,23 @@ import threading
 
 
 if __name__ == "__main__":
-    IMU_thread = threading.Thread(target=read_IMU.read_IMU_data, args=())
+    running = threading.Event()
+    running.set()
+
+    imu_thread = read_IMU.ReadImuDataGo1(running, use_LAN=True)
     Nano13_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(13, ))
     Nano14_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(14, ))
     Nano15_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(15, ))
 
-    IMU_thread.start()
+    imu_thread.start()
     Nano13_thread.start()
     Nano14_thread.start()
     Nano15_thread.start()
 
-    IMU_thread.join()
-    Nano13_thread.join()
-    Nano14_thread.join()
-    Nano15_thread.join()
+    # check whether measurement shall be stopped
+    while running.is_set():
+        user_input = input("\n!!!! Enter stop to end the measurement !!!!\n")
+        if "stop" in user_input.lower():
+            running.clear()
+
+    print("IMU Measurement thread was stopped properly! Please kill the other processes now")
