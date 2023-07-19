@@ -13,6 +13,11 @@ if __name__ == "__main__":
     Nano14_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(14, ))
     Nano15_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(15, ))
 
+    # set Nano threads to deamon threads, so they will be automatically killed when imu_thread ends
+    Nano13_thread.daemon = True
+    Nano14_thread.daemon = True
+    Nano15_thread.daemon = True
+
     imu_thread.start()
     Nano13_thread.start()
     Nano14_thread.start()
@@ -24,4 +29,4 @@ if __name__ == "__main__":
         if "stop" in user_input.lower():
             running.clear()
 
-    print("IMU Measurement thread was stopped properly! Please kill the other processes now")
+    print("Measurement was stopped properly!")

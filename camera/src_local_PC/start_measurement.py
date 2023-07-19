@@ -82,6 +82,7 @@ def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
 
 if __name__ == "__main__":
     # variables for setting time
+    running = True
     set_time = False
     user_time_source = "eissen"
     ip_time_source = "192.168.123.52"
@@ -97,10 +98,19 @@ if __name__ == "__main__":
     Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, ))
     Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, ))
 
+    # set Nano threads to deamon threads, so they will be automatically killed when imu_thread ends
+    Nano13_thread.daemon = True
+    Nano14_thread.daemon = True
+    Nano15_thread.daemon = True
+
     Nano13_thread.start()
     Nano14_thread.start()
     Nano15_thread.start()
 
-    Nano13_thread.join()
-    Nano14_thread.join()
-    Nano15_thread.join()
+    # check whether measurement shall be stopped
+    while running:
+        user_input = input("\n!!!! Enter stop to end the measurement !!!!\n")
+        if "stop" in user_input.lower():
+            running = False
+
+    print("Measurement was stopped properly!")
