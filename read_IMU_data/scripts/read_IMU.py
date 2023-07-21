@@ -5,6 +5,7 @@ import time
 import os
 import numpy as np
 import threading
+from datetime import datetime
 
 # get path to robot_interface lib from Unitree
 file_dir = os.path.dirname(os.path.abspath(__file__))
@@ -78,7 +79,7 @@ class ReadImuDataGo1(threading.Thread):
                 print(f"bandwidth = {self.state.bandWidth}")
                 print(f"crc = {self.state.crc}")
                 self.info_printed_once = True
-                self.measurement_timestamp = time.strftime("%H_%M_%S")
+                self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")
                 self.start_logging = True
 
             # log everything that seems to be interesting every iteration after general info was logged once
@@ -214,22 +215,22 @@ class ReadImuDataGo1(threading.Thread):
         self.temperature_ar = []
 
         # get new measurement timestamp
-        self.measurement_timestamp = time.strftime("%H_%M_%S")
+        self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")
 
     def create_measurement_folder(self):
         # create folder for results (if it does not exist yet)
-        measurement_timestamp = time.strftime("%d_%m__%H_%M")
+        measurement_dir_timestamp = datetime.now().strftime("%d_%m__%H_%M")
 
-        self.mode_data_dir = f"./measurement_{measurement_timestamp}/mode"
-        self.bodyHeight_data_dir = f"./measurement_{measurement_timestamp}/bodyHeight"
-        self.footRaiseHeight_data_dir = f"./measurement_{measurement_timestamp}/footRaiseHeight"
-        self.yawSpeed_data_dir = f"./measurement_{measurement_timestamp}/yawSpeed"
-        self.footForce_data_dir = f"./measurement_{measurement_timestamp}/footForce"
-        self.velocity_data_dir = f"./measurement_{measurement_timestamp}/velocity"
-        self.gyroscope_data_dir = f"./measurement_{measurement_timestamp}/gyroscope"
-        self.accelerometer_data_dir = f"./measurement_{measurement_timestamp}/accelerometer"
-        self.rpy_data_dir = f"./measurement_{measurement_timestamp}/rpy"
-        self.rpy_data_dir = f"./measurement_{measurement_timestamp}/temperature"
+        self.mode_data_dir = f"./measurement_{measurement_dir_timestamp}/mode"
+        self.bodyHeight_data_dir = f"./measurement_{measurement_dir_timestamp}/bodyHeight"
+        self.footRaiseHeight_data_dir = f"./measurement_{measurement_dir_timestamp}/footRaiseHeight"
+        self.yawSpeed_data_dir = f"./measurement_{measurement_dir_timestamp}/yawSpeed"
+        self.footForce_data_dir = f"./measurement_{measurement_dir_timestamp}/footForce"
+        self.velocity_data_dir = f"./measurement_{measurement_dir_timestamp}/velocity"
+        self.gyroscope_data_dir = f"./measurement_{measurement_dir_timestamp}/gyroscope"
+        self.accelerometer_data_dir = f"./measurement_{measurement_dir_timestamp}/accelerometer"
+        self.rpy_data_dir = f"./measurement_{measurement_dir_timestamp}/rpy"
+        self.rpy_data_dir = f"./measurement_{measurement_dir_timestamp}/temperature"
 
         os.makedirs(self.mode_data_dir, exist_ok=True)
         os.makedirs(self.bodyHeight_data_dir, exist_ok=True)
