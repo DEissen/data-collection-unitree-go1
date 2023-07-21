@@ -1,6 +1,6 @@
 import paramiko
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import subprocess
 
@@ -22,7 +22,7 @@ def execute_command_via_ssh(ip_addr, pwd, command):
 
     client.close()
 
-def start_camera_measurement_via_ssh(ip_last_segment):
+def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
     """
         Function to start a SSH session to "unitree@192.168.123.{ip_last_segment}. Afterwards the camera measurement is started and it's output printed.
         NOTE: The triggered processes will be automatically ended in case the SSH connection is closed
@@ -43,6 +43,8 @@ def start_camera_measurement_via_ssh(ip_last_segment):
         commands.append("./bins/getFrameOneCamera")
     else:
         commands.append("./bins/getFrameTwoCameras")
+
+    commands.append(starting_time_string)
 
     # prepare command string and execute the commands
     command_string = "; ".join(commands)
@@ -91,7 +93,7 @@ def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
 def get_time_diff(ip_last_segment, remote_username):
     # ideas:
     #  - correct time diff by duration, e.g. add 1/3 of duration to start_time
-    #  - determine timedelta for multiple times (e.g. 10 times), as result is not always the same
+    #  - determine time_diff for multiple times (e.g. 10 times), as result is not always the same
     date_format_string ='date +"%C%y-%m-%d %T.%6N"' # format string for date shell command
 
     # create SSH session to get time from remote PC
@@ -116,19 +118,21 @@ def get_time_diff(ip_last_segment, remote_username):
     
     if start_time > time_of_remote:
         later_timestamp = "local PC"
-        timedelta = (start_time - time_of_remote)
+        time_diff = (start_time - time_of_remote)
     else:
         later_timestamp = "remote PC"
-        timedelta = time_of_remote - start_time
+        time_diff = time_of_remote - start_time
 
     print(start_time)
     print(time_of_remote)
-    print(f"{later_timestamp} is later timestamp by: {timedelta}\nOperation took {duration}")
+    print(f"{later_timestamp} is later timestamp by: {time_diff}\nOperation took {duration}")
 
-    return timedelta
+    return time_diff
 
 
 if __name__ == "__main__":
+    start_time = datetime.now() + timedelta(seconds=30)
+    start_time_string = start_time.strftime("%H:%M:%S")
 
     # variables for setting time
     running = True
@@ -144,15 +148,15 @@ if __name__ == "__main__":
     #     set_time_via_ssh_for_Nano(15, user_time_source, ip_time_source)
     #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
-    # TODO: do someting with timedelta
-    timedelta_13 = get_time_diff(13, "unitree")
-    timedelta_14 = get_time_diff(14, "unitree")
-    timedelta_15 = get_time_diff(15, "unitree")
-    timedelta_pi = get_time_diff(161, "pi")
+    # TODO: do someting with time_diff, most likely log it and correct timestamps afterwards
+    time_diff_13 = get_time_diff(13, "unitree")
+    time_diff_14 = get_time_diff(14, "unitree")
+    time_diff_15 = get_time_diff(15, "unitree")
+    time_diff_pi = get_time_diff(161, "pi")
 
-    Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, ))
-    Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, ))
-    Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, ))
+    Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, start_time_string, ))
+    Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, start_time_string, ))
+    Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, start_time_string, ))
 
     # set Nano threads to deamon threads, so they will be automatically killed when imu_thread ends
     Nano13_thread.daemon = True

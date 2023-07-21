@@ -5,15 +5,16 @@ import threading
 
 
 if __name__ == "__main__":
-    start_time = datetime.now() + timedelta(seconds=5)
+    start_time = datetime.now() + timedelta(seconds=30)
+    start_time_string = start_time.strftime("%H:%M:%S")
     
     running = threading.Event()
     running.set()
 
     imu_thread = read_IMU.ReadImuDataGo1(running, use_LAN=True, starting_time=start_time)
-    Nano13_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(13, ))
-    Nano14_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(14, ))
-    Nano15_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(15, ))
+    Nano13_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(13, start_time_string, ))
+    Nano14_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(14, start_time_string, ))
+    Nano15_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(15, start_time_string, ))
 
     # set Nano threads to deamon threads, so they will be automatically killed when imu_thread ends
     Nano13_thread.daemon = True
