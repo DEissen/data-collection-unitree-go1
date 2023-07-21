@@ -57,7 +57,7 @@ class ReadImuDataGo1(threading.Thread):
             self.ip_addr ="192.168.12.1"
 
         print(f"Start measurement with Pi {self.ip_addr}")
-        self.udp = sdk.UDP(self.HIGHLEVEL, 8080, "192.168.12.1", 8082)
+        self.udp = sdk.UDP(self.HIGHLEVEL, 8080, self.ip_addr, 8082)
 
         self.cmd = sdk.HighCmd()
         self.state = sdk.HighState()
