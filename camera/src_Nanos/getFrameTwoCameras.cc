@@ -114,14 +114,14 @@ int main(int argc, char* argv[])
    while (cam1.isOpened() && cam2.isOpened())
    {
       // get images or wait if they are not present yet
-      cv::Mat frameCam1, frameCam2;
+      cv::Mat leftCam1, rightCam1, leftCam2, rightCam2;
       std::chrono::microseconds t;
-      if (!cam1.getRawFrame(frameCam1, t))
+      if (!cam1.getStereoFrame(leftCam1, rightCam1, t))
       {  ///< get camera raw image
          usleep(500);
          continue;
       }
-      if (!cam2.getRawFrame(frameCam2, t))
+      if (!cam2.getStereoFrame(leftCam2, rightCam2, t))
       {  ///< get camera raw image
          usleep(500);
          continue;
@@ -133,20 +133,12 @@ int main(int argc, char* argv[])
       auto transformed = now.time_since_epoch().count() / 1000000;
       auto millis = transformed % 1000;
       std::stringstream datetime;
-      datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << int(millis);
+      datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0') << int(millis);
 
-      cv::Mat leftCam1, rigthCam1;
-      frameCam1(cv::Rect(0, 0, frameCam1.size().width / 2, frameCam1.size().height)).copyTo(rigthCam1);
-      frameCam1(cv::Rect(frameCam1.size().width / 2, 0, frameCam1.size().width / 2, frameCam1.size().height))
-          .copyTo(leftCam1);
-      cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rigthCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rightCam1);
       cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Left_" + datetime.str() + ".jpg", leftCam1);
 
-      cv::Mat leftCam2, rigthCam2;
-      frameCam2(cv::Rect(0, 0, frameCam2.size().width / 2, frameCam2.size().height)).copyTo(rigthCam2);
-      frameCam2(cv::Rect(frameCam2.size().width / 2, 0, frameCam2.size().width / 2, frameCam2.size().height))
-          .copyTo(leftCam2);
-      cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rigthCam2);
+      cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rightCam2);
       cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
    }
 

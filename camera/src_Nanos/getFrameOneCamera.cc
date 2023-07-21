@@ -103,9 +103,9 @@ int main(int argc, char* argv[])
    while (cam1.isOpened())
    {
       // get images or wait if they are not present yet
-      cv::Mat frameCam1;
+      cv::Mat leftCam1, rightCam1;
       std::chrono::microseconds t;
-      if (!cam1.getRawFrame(frameCam1, t))
+      if (!cam1.getStereoFrame(leftCam1, rightCam1, t))
       {  ///< get camera raw image
          usleep(1000);
          continue;
@@ -117,13 +117,9 @@ int main(int argc, char* argv[])
       auto transformed = now.time_since_epoch().count() / 1000000;
       auto millis = transformed % 1000;
       std::stringstream datetime;
-      datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << int(millis);
+      datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0') << int(millis);
 
-      cv::Mat leftCam1, rigthCam1;
-      frameCam1(cv::Rect(0, 0, frameCam1.size().width / 2, frameCam1.size().height)).copyTo(rigthCam1);
-      frameCam1(cv::Rect(frameCam1.size().width / 2, 0, frameCam1.size().width / 2, frameCam1.size().height))
-          .copyTo(leftCam1);
-      cv::imwrite(cam1Path + "/Right_" + datetime.str() + ".jpg", rigthCam1);
+      cv::imwrite(cam1Path + "/Right_" + datetime.str() + ".jpg", rightCam1);
       cv::imwrite(cam1Path + "/Left_" + datetime.str() + ".jpg", leftCam1);
    }
 
