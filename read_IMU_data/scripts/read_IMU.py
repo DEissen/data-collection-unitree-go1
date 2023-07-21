@@ -5,7 +5,7 @@ import time
 import os
 import numpy as np
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # get path to robot_interface lib from Unitree
 file_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,9 +16,9 @@ import robot_interface as sdk  # nopep8
 
 
 class ReadImuDataGo1(threading.Thread):
-    def __init__(self, running, use_LAN):
-        super().__init__()
-        # initialize some variables
+    def __init__(self, running, use_LAN, starting_time: datetime):
+        super().__init__() # call init of super class to enable usage as thread
+        # initialize members
         self.runCounter = 0
         self.info_printed_once = False
         self.start_logging = False
@@ -31,6 +31,7 @@ class ReadImuDataGo1(threading.Thread):
         self.measurement_timestamp = 0
 
         self.running = running
+        self.starting_time = starting_time
 
         self.HIGHLEVEL = 0xee
         self.LOWLEVEL = 0xff
@@ -64,98 +65,104 @@ class ReadImuDataGo1(threading.Thread):
 
     def run(self):
         while self.running.is_set():
-            time.sleep(self.sleep_in_seconds)
+            # check if logging shall already start
+            if datetime.now() > self.starting_time:
+                time.sleep(self.sleep_in_seconds)
 
-            self.udp.Recv()
-            self.udp.GetRecv(self.state)
+                self.udp.Recv()
+                self.udp.GetRecv(self.state)
 
-            # print general info once at the beginning after a short waiting time
-            if not self.info_printed_once and self.runCounter > 1 / self.sleep_in_seconds:
-                print(f"Header = {self.state.head}")
-                print(f"levelFlag = {self.state.levelFlag}")
-                print(f"frameReserve = {self.state.frameReserve}")
-                print(f"SN = {self.state.SN}")
-                print(f"version = {self.state.version}")
-                print(f"bandwidth = {self.state.bandWidth}")
-                print(f"crc = {self.state.crc}")
-                self.info_printed_once = True
-                self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")
-                self.start_logging = True
+                # print general info once at the beginning after a short waiting time
+                if not self.info_printed_once and self.runCounter > 1 / self.sleep_in_seconds:
+                    print(f"Header = {self.state.head}")
+                    print(f"levelFlag = {self.state.levelFlag}")
+                    print(f"frameReserve = {self.state.frameReserve}")
+                    print(f"SN = {self.state.SN}")
+                    print(f"version = {self.state.version}")
+                    print(f"bandwidth = {self.state.bandWidth}")
+                    print(f"crc = {self.state.crc}")
+                    self.info_printed_once = True
+                    self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
+                    self.start_logging = True
 
-            # log everything that seems to be interesting every iteration after general info was logged once
-            if self.start_logging:
-                if self.show_print:
-                    print(f"logging for step {self.runCounter}")
-                    print(f"mode = {self.state.mode}")
-                    print(f"bodyHeight = {round(self.state.bodyHeight, 6)}")
-                    print(f"footRaiseHeight = {round(self.state.footRaiseHeight, 6)}")
-                    # yawSpeed = rotation speed of robot
-                    print(f"yawSpeed = {round(self.state.yawSpeed, 6)}")
-                    # meaning of footForce: 0 = vorne rechts; 1 = vorne links; 2 = hinten rechts; 3 = hinten links
-                    print(
-                        f"footForce: {round(self.state.footForce[0], 6)}, {round(self.state.footForce[1], 6)}, {round(self.state.footForce[2], 6)}, {round(self.state.footForce[3], 6)}")
-                    # footForceEst is useless
-                    print(
-                        f"footForceEst: {round(self.state.footForceEst[0], 6)}, {round(self.state.footForceEst[1], 6)}, {round(self.state.footForceEst[2], 6)}, {round(self.state.footForceEst[3], 6)}")
-                    # position does not seem to be useful
-                    print(
-                        f"position: {round(self.state.position[0], 6)}, {round(self.state.position[1], 6)}, {round(self.state.position[2], 6)}")
-                    # meaning of velocity: 0 = vorwärts/ rückwärts; 1 = seitwärts; 2 = hoch/runter
-                    print(
-                        f"velocity: {round(self.state.velocity[0], 6)}, {round(self.state.velocity[1], 6)}, {round(self.state.velocity[2], 6)}")
-                    print("IMU data:")
-                    # gyroscope: 0 = x; 1 = y; 2 = z
-                    print(
-                        f"gyroscope: {round(self.state.imu.gyroscope[0], 6)}, {round(self.state.imu.gyroscope[1], 6)}, {round(self.state.imu.gyroscope[2], 6)}")
-                    # accelerometer: 0 = x; 1 = y; 2 = z
-                    print(
-                        f"accelerometer: {round(self.state.imu.accelerometer[0], 6)}, {round(self.state.imu.accelerometer[1], 6)}, {round(self.state.imu.accelerometer[2], 6)}")
-                    # rpy = Euler angle: 0 = Roll; 1 = Pitch; 2 = Yaw
-                    print(
-                        f"rpy: {round(self.state.imu.rpy[0], 6)}, {round(self.state.imu.rpy[1], 6)}, {round(self.state.imu.rpy[2], 6)}")
-                    print(f"temperature = {self.state.imu.temperature}")
-                    print("\n")
+                # log everything that seems to be interesting every iteration after general info was logged once
+                if self.start_logging:
+                    if self.show_print:
+                        print(f"logging for step {self.runCounter}")
+                        print(f"mode = {self.state.mode}")
+                        print(f"bodyHeight = {round(self.state.bodyHeight, 6)}")
+                        print(f"footRaiseHeight = {round(self.state.footRaiseHeight, 6)}")
+                        # yawSpeed = rotation speed of robot
+                        print(f"yawSpeed = {round(self.state.yawSpeed, 6)}")
+                        # meaning of footForce: 0 = vorne rechts; 1 = vorne links; 2 = hinten rechts; 3 = hinten links
+                        print(
+                            f"footForce: {round(self.state.footForce[0], 6)}, {round(self.state.footForce[1], 6)}, {round(self.state.footForce[2], 6)}, {round(self.state.footForce[3], 6)}")
+                        # footForceEst is useless
+                        print(
+                            f"footForceEst: {round(self.state.footForceEst[0], 6)}, {round(self.state.footForceEst[1], 6)}, {round(self.state.footForceEst[2], 6)}, {round(self.state.footForceEst[3], 6)}")
+                        # position does not seem to be useful
+                        print(
+                            f"position: {round(self.state.position[0], 6)}, {round(self.state.position[1], 6)}, {round(self.state.position[2], 6)}")
+                        # meaning of velocity: 0 = vorwärts/ rückwärts; 1 = seitwärts; 2 = hoch/runter
+                        print(
+                            f"velocity: {round(self.state.velocity[0], 6)}, {round(self.state.velocity[1], 6)}, {round(self.state.velocity[2], 6)}")
+                        print("IMU data:")
+                        # gyroscope: 0 = x; 1 = y; 2 = z
+                        print(
+                            f"gyroscope: {round(self.state.imu.gyroscope[0], 6)}, {round(self.state.imu.gyroscope[1], 6)}, {round(self.state.imu.gyroscope[2], 6)}")
+                        # accelerometer: 0 = x; 1 = y; 2 = z
+                        print(
+                            f"accelerometer: {round(self.state.imu.accelerometer[0], 6)}, {round(self.state.imu.accelerometer[1], 6)}, {round(self.state.imu.accelerometer[2], 6)}")
+                        # rpy = Euler angle: 0 = Roll; 1 = Pitch; 2 = Yaw
+                        print(
+                            f"rpy: {round(self.state.imu.rpy[0], 6)}, {round(self.state.imu.rpy[1], 6)}, {round(self.state.imu.rpy[2], 6)}")
+                        print(f"temperature = {self.state.imu.temperature}")
+                        print("\n")
 
-                self.mode_ar.append(self.state.mode)
-                self.bodyHeight_ar.append(self.state.bodyHeight)
-                self.footRaiseHeight_ar.append(self.state.footRaiseHeight)
-                self.yawSpeed_ar.append(self.state.yawSpeed)
-                self.footForce_ar.append(
-                    [self.state.footForce[0], self.state.footForce[1], self.state.footForce[2], self.state.footForce[3]])
-                self.velocity_ar.append(
-                    [self.state.velocity[0], self.state.velocity[1], self.state.velocity[2]])
-                self.gyroscope_ar.append(
-                    [self.state.imu.gyroscope[0], self.state.imu.gyroscope[1], self.state.imu.gyroscope[2]])
-                self.accelerometer_ar.append(
-                    [self.state.imu.accelerometer[0], self.state.imu.accelerometer[1], self.state.imu.accelerometer[2]])
-                self.rpy_ar.append(
-                    [self.state.imu.rpy[0], self.state.imu.rpy[1], self.state.imu.rpy[2]])
-                self.temperature_ar.append(self.state.imu.temperature)
+                    self.mode_ar.append(self.state.mode)
+                    self.bodyHeight_ar.append(self.state.bodyHeight)
+                    self.footRaiseHeight_ar.append(self.state.footRaiseHeight)
+                    self.yawSpeed_ar.append(self.state.yawSpeed)
+                    self.footForce_ar.append(
+                        [self.state.footForce[0], self.state.footForce[1], self.state.footForce[2], self.state.footForce[3]])
+                    self.velocity_ar.append(
+                        [self.state.velocity[0], self.state.velocity[1], self.state.velocity[2]])
+                    self.gyroscope_ar.append(
+                        [self.state.imu.gyroscope[0], self.state.imu.gyroscope[1], self.state.imu.gyroscope[2]])
+                    self.accelerometer_ar.append(
+                        [self.state.imu.accelerometer[0], self.state.imu.accelerometer[1], self.state.imu.accelerometer[2]])
+                    self.rpy_ar.append(
+                        [self.state.imu.rpy[0], self.state.imu.rpy[1], self.state.imu.rpy[2]])
+                    self.temperature_ar.append(self.state.imu.temperature)
 
-            # log in the specified interval
-            if self.start_logging and ((self.runCounter * self.sleep_in_seconds) % self.log_interval == 0):
-                self.save_logs()
+                # log in the specified interval
+                if self.start_logging and ((self.runCounter * self.sleep_in_seconds) % self.log_interval == 0):
+                    self.save_logs()
 
-            # end measurement after specified time
-            if self.runCounter > self.measurement_duration / self.sleep_in_seconds:
-                sys.exit(0)
+                # end measurement after specified time
+                if self.runCounter > self.measurement_duration / self.sleep_in_seconds:
+                    sys.exit(0)
 
-            # prepare and send high level command to do nothing!
-            self.cmd.mode = 0      # 0:idle, default stand      1:forced stand     2:walk continuously
-            self.cmd.gaitType = 0
-            self.cmd.speedLevel = 0
-            self.cmd.footRaiseHeight = 0
-            self.cmd.bodyHeight = 0
-            self.cmd.euler = [0, 0, 0]
-            self.cmd.velocity = [0, 0]
-            self.cmd.yawSpeed = 0.0
-            self.cmd.reserve = 0
+                # prepare and send high level command to do nothing!
+                self.cmd.mode = 0      # 0:idle, default stand      1:forced stand     2:walk continuously
+                self.cmd.gaitType = 0
+                self.cmd.speedLevel = 0
+                self.cmd.footRaiseHeight = 0
+                self.cmd.bodyHeight = 0
+                self.cmd.euler = [0, 0, 0]
+                self.cmd.velocity = [0, 0]
+                self.cmd.yawSpeed = 0.0
+                self.cmd.reserve = 0
 
-            self.udp.SetSend(self.cmd)
-            self.udp.Send()
+                self.udp.SetSend(self.cmd)
+                self.udp.Send()
 
-            self.runCounter = self.runCounter + 1
-        
+                self.runCounter = self.runCounter + 1
+
+            # wait some time for start of logging
+            else:
+                time.sleep(self.sleep_in_seconds)
+
         # save logs in case running is not set anymore by external source to not miss any data
         self.save_logs()
 
@@ -215,7 +222,7 @@ class ReadImuDataGo1(threading.Thread):
         self.temperature_ar = []
 
         # get new measurement timestamp
-        self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")
+        self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
 
     def create_measurement_folder(self):
         # create folder for results (if it does not exist yet)
@@ -245,10 +252,12 @@ class ReadImuDataGo1(threading.Thread):
 
 
 if __name__ == '__main__':
+    start_time = datetime.now() + timedelta(seconds=5)
+
     running = threading.Event()
     running.set()
 
-    imu_thread = ReadImuDataGo1(running, use_LAN=True)
+    imu_thread = ReadImuDataGo1(running, use_LAN=True, starting_time=start_time)
 
     imu_thread.start()
 
