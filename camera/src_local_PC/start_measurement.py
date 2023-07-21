@@ -55,20 +55,29 @@ def start_camera_measurement_via_ssh(ip_last_segment):
     client.close()
 
 
-def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source, ip_time_source):
+def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source):
     """
+        NOT WORKING YET!! due to missing possiblity to provide passwords!
         TODO: Update docstring
         NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
     """
-    ssh_target = f"unitree@192.168.123.{target_ip_last_segment}"
-    date_format = f'--set="$(ssh {user_time_source}@{ip_time_source} date \\"+%C%y-%m-%d %H:%M:%S\\")"'
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(f"192.168.123.{target_ip_last_segment}", username='unitree', password="123")
 
+    # prepare command string and execute the commands
     print(f"Set clock for Nano {target_ip_last_segment}")
-    p = subprocess.Popen(["sshpass", "-p", "123", "ssh", ssh_target, "sudo", "date", date_format])
-    sts = os.waitpid(p.pid, 0)
+    stdin, stdout, stderr = client.exec_command("/home/unitree/Documents/set_time.sh", get_pty=True) 
+
+    # print output of process
+    for line in stdout:
+        print(f"Update for {ip_last_segment}: {line}")
+
+    client.close()
 
 def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
     """
+        NOT WORKING YET!! due to missing possiblity to provide passwords!
         TODO: Update docstring
         NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
     """
@@ -88,7 +97,7 @@ def get_time_diff(ip_last_segment, remote_username):
     # create SSH session to get time from remote PC
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(f"192.168.185.{ip_last_segment}", username=remote_username, password='123')
+    client.connect(f"192.168.123.{ip_last_segment}", username=remote_username, password='123')
 
     start_time = datetime.now() # get time on local PC
     stdin, stdout, stderr = client.exec_command(date_format_string, get_pty=True) # get time on remote PC
@@ -128,17 +137,18 @@ if __name__ == "__main__":
     ip_time_source = "192.168.123.52"
 
     # first set time for all µCs if selected by set_time flag
-    if set_time:
-        set_time_via_ssh_for_Nano(13, user_time_source, ip_time_source)
-        set_time_via_ssh_for_Nano(14, user_time_source, ip_time_source)
-        set_time_via_ssh_for_Nano(15, user_time_source, ip_time_source)
-        set_time_via_ssh_for_PI(user_time_source, ip_time_source)
+    # NOTE: Not possible yet, instead run the file /home/unitree/Documents/set_time.sh on the remote by your own!
+    # if set_time:
+    #     set_time_via_ssh_for_Nano(13, user_time_source)
+    #     set_time_via_ssh_for_Nano(14, user_time_source, ip_time_source)
+    #     set_time_via_ssh_for_Nano(15, user_time_source, ip_time_source)
+    #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
     # TODO: do someting with timedelta
     timedelta_13 = get_time_diff(13, "unitree")
     timedelta_14 = get_time_diff(14, "unitree")
     timedelta_15 = get_time_diff(15, "unitree")
-    timedelta_pi = get_time_diff(201, "pi")
+    timedelta_pi = get_time_diff(161, "pi")
 
     Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, ))
     Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, ))
