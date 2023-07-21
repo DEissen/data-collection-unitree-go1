@@ -6,6 +6,10 @@
 #include <chrono>      // for timestamps
 #include <iostream>    // for std::cout
 #include <sys/stat.h>  // for mkdir
+#include <ctime>       // for std::localtime()
+#include <string>      // for sscanf, ...
+#include <thread>      // for sleep_for()
+
 
 auto g_base_path = "./data/";
 auto g_NameCam1 = "BellyCam";
@@ -66,6 +70,32 @@ std::string createMeasurementDir()
    return cam1Path;
 }
 
+std::string getCurrentLocalTime() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    std::tm* tm_time = std::localtime(&time);
+    char buffer[9];
+    std::strftime(buffer, sizeof(buffer), "%H:%M:%S", tm_time);
+    return buffer;
+}
+
+int calculateTimeDifference(const std::string& targetTime) {
+    std::string current_time = getCurrentLocalTime();
+
+    int target_hour, target_minute, target_second, current_hour, current_minute, current_second;
+    sscanf(targetTime.c_str(), "%d:%d:%d", &target_hour, &target_minute, &targetSecond);
+    sscanf(currentTime.c_str(), "%d:%d:%d", &current_hour, &current_minute, &current_second);
+
+    int target_total_seconds = target_hour * 3600 + target_minute * 60 + targetSecond;
+    int current_total_seconds = current_hour * 3600 + current_minute * 60 + current_second;
+
+    if (target_total_seconds <= current_total_seconds) {
+        return -1; // provided time is not in the future
+    }
+
+    return (target_total_seconds - current_total_seconds) * 1000;
+}
+
 int main(int argc, char* argv[])
 {
    std::string cam1Path = createMeasurementDir();
@@ -75,15 +105,11 @@ int main(int argc, char* argv[])
    cv::Size frameSize(1856, 800);  // defalut image size: 1856 X 800
    int fps = 5;                    // set fps below 30 (at 30 the frame might be incomplete)
 
-   // does seem to be code to change device id, ... by shell parameters
-   // if(argc >= 2){
-   //     deviceNode1 = std::atoi(argv[1]);
-   //     if(argc >= 4){
-   //         frameSize = cv::Size(std::atoi(argv[2]), std::atoi(argv[3]));
-   //     }
-   //     if(argc >=5)
-   //         fps = std::atoi(argv[4]);
-   // }
+   // get starting time as argument
+   if (argc < 2) {
+      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'" << std::endl;
+      return 1;
+   }
 
    UnitreeCamera cam1(deviceNode1);
 
@@ -95,10 +121,22 @@ int main(int argc, char* argv[])
    cam1.setRawFrameSize(frameSize);
    cam1.setRawFrameRate(fps);
 
-   std::cout << "Cam1 Device Position Number:" << cam1.getPosNumber() << std::endl;
-
    // Start camera capturing
    cam1.startCapture();
+
+
+   // calculate time difference to target time 
+   std::string targetTime(argv[1]);
+   int time_difference_milliseconds = calculateTimeDifference(targetTime);
+
+   if (time_difference_milliseconds < 0) {
+      std::cerr << "Starting time is not in the future!" << std::endl;
+      return 1;
+   }
+
+   std::cout << "Camera starts caputring, will wait for " << (time_difference_milliseconds / 1000) << "s to start with saving the images." << std::endl;
+   std::this_thread::sleep_for(std::chrono::milliseconds(time_difference_milliseconds));
+   std::cout << "Camera starts saving images now!";
 
    while (cam1.isOpened())
    {
