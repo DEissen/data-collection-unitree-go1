@@ -79,14 +79,14 @@ std::string getCurrentLocalTime() {
     return buffer;
 }
 
-int calculateTimeDifference(const std::string& targetTime) {
+int calculateTimeDifference(const std::string& target_time) {
     std::string current_time = getCurrentLocalTime();
 
     int target_hour, target_minute, target_second, current_hour, current_minute, current_second;
-    sscanf(targetTime.c_str(), "%d:%d:%d", &target_hour, &target_minute, &targetSecond);
-    sscanf(currentTime.c_str(), "%d:%d:%d", &current_hour, &current_minute, &current_second);
+    sscanf(target_time.c_str(), "%d:%d:%d", &target_hour, &target_minute, &target_second);
+    sscanf(current_time.c_str(), "%d:%d:%d", &current_hour, &current_minute, &current_second);
 
-    int target_total_seconds = target_hour * 3600 + target_minute * 60 + targetSecond;
+    int target_total_seconds = target_hour * 3600 + target_minute * 60 + target_second;
     int current_total_seconds = current_hour * 3600 + current_minute * 60 + current_second;
 
     if (target_total_seconds <= current_total_seconds) {
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 
    std::cout << "Camera starts caputring, will wait for " << (time_difference_milliseconds / 1000) << "s to start with saving the images." << std::endl;
    std::this_thread::sleep_for(std::chrono::milliseconds(time_difference_milliseconds));
-   std::cout << "Camera starts saving images now!";
+   std::cout << "Camera starts saving images now!" << std::endl;
 
    while (cam1.isOpened())
    {
