@@ -227,17 +227,18 @@ class ReadImuDataGo1(threading.Thread):
     def create_measurement_folder(self):
         # create folder for results (if it does not exist yet)
         measurement_dir_timestamp = datetime.now().strftime("%d_%m__%H_%M")
+        self.path_measurement_dir = f"./measurement_{measurement_dir_timestamp}"
 
-        self.mode_data_dir = f"./measurement_{measurement_dir_timestamp}/mode"
-        self.bodyHeight_data_dir = f"./measurement_{measurement_dir_timestamp}/bodyHeight"
-        self.footRaiseHeight_data_dir = f"./measurement_{measurement_dir_timestamp}/footRaiseHeight"
-        self.yawSpeed_data_dir = f"./measurement_{measurement_dir_timestamp}/yawSpeed"
-        self.footForce_data_dir = f"./measurement_{measurement_dir_timestamp}/footForce"
-        self.velocity_data_dir = f"./measurement_{measurement_dir_timestamp}/velocity"
-        self.gyroscope_data_dir = f"./measurement_{measurement_dir_timestamp}/gyroscope"
-        self.accelerometer_data_dir = f"./measurement_{measurement_dir_timestamp}/accelerometer"
-        self.rpy_data_dir = f"./measurement_{measurement_dir_timestamp}/rpy"
-        self.rpy_data_dir = f"./measurement_{measurement_dir_timestamp}/temperature"
+        self.mode_data_dir = f"{self.path_measurement_dir}/mode"
+        self.bodyHeight_data_dir = f"{self.path_measurement_dir}/bodyHeight"
+        self.footRaiseHeight_data_dir = f"{self.path_measurement_dir}/footRaiseHeight"
+        self.yawSpeed_data_dir = f"{self.path_measurement_dir}/yawSpeed"
+        self.footForce_data_dir = f"{self.path_measurement_dir}/footForce"
+        self.velocity_data_dir = f"{self.path_measurement_dir}/velocity"
+        self.gyroscope_data_dir = f"{self.path_measurement_dir}/gyroscope"
+        self.accelerometer_data_dir = f"{self.path_measurement_dir}/accelerometer"
+        self.rpy_data_dir = f"{self.path_measurement_dir}/rpy"
+        self.rpy_data_dir = f"{self.path_measurement_dir}/temperature"
 
         os.makedirs(self.mode_data_dir, exist_ok=True)
         os.makedirs(self.bodyHeight_data_dir, exist_ok=True)

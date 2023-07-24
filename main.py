@@ -1,16 +1,34 @@
 import read_IMU_data.scripts.read_IMU as read_IMU
-import camera.src_local_PC.start_measurement as camera_measurement
+import camera.src_local_PC.start_measurement as camera_measurement, get_average_time_diff_ms
 from datetime import datetime, timedelta
 import threading
+from custom_utils.utils import save_struct_as_json
 
 
 if __name__ == "__main__":
-    start_time = datetime.now() + timedelta(seconds=30)
-    start_time_string = start_time.strftime("%H:%M:%S")
-    
+    # variables for main
     running = threading.Event()
     running.set()
+    iterations_time_diff_calculation = 10
+    info_struct = {} # struct to add all data which shall be stored in injo.json
 
+    # get time diff for all Go1 µCs and save them in the info_struct
+    time_diff_13, corrected_time_diff_13 = get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14 = get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_pi, corrected_time_diff_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
+
+    info_struct["time_diff_13"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13}
+    info_struct["time_diff_14"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14}
+    info_struct["time_diff_15"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15}
+    info_struct["time_diff_pi"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi}
+
+    # set starting time for all threads to 30 seconds in the future
+    start_time = datetime.now() + timedelta(seconds=30)
+    start_time_string = start_time.strftime("%H:%M:%S")
+    info_struct["starting_time"] = start_time_string
+    
+    # create and start all measurement threads to get all data in parallel
     imu_thread = read_IMU.ReadImuDataGo1(running, use_LAN=True, starting_time=start_time)
     Nano13_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(13, start_time_string, ))
     Nano14_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(14, start_time_string, ))
@@ -31,5 +49,13 @@ if __name__ == "__main__":
         user_input = input("\n!!!! Enter stop to end the measurement !!!!\n")
         if "stop" in user_input.lower():
             running.clear()
+
+    # log end time of the measurement
+    end_time = datetime.now() + timedelta(seconds=30)
+    end_time_string = end_time.strftime("%H:%M:%S")
+    info_struct["end_time"] = end_time_string
+
+    # save info_struct to info.json in measurement dir
+    save_struct_as_json(imu_thread.path_measurement_dir, "info.json", info_struct)
 
     print("Measurement was stopped properly!")

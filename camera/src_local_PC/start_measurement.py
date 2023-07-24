@@ -176,10 +176,7 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
 
 
 if __name__ == "__main__":
-    start_time = datetime.now() + timedelta(seconds=30)
-    start_time_string = start_time.strftime("%H:%M:%S")
-
-    # variables for setting time
+    # variables for main
     running = True
     set_time = False
     user_time_source = "eissen"
@@ -200,6 +197,11 @@ if __name__ == "__main__":
     time_diff_15, corrected_time_diff_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
     time_diff_pi, corrected_time_diff_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
 
+    # set starting time for all threads to 30 seconds in the future
+    start_time = datetime.now() + timedelta(seconds=30)
+    start_time_string = start_time.strftime("%H:%M:%S")
+
+    # create and start all measurement threads to get all data in parallel
     Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, start_time_string, ))
     Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, start_time_string, ))
     Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, start_time_string, ))
