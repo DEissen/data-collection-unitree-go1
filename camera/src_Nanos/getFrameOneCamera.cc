@@ -10,7 +10,6 @@
 #include <string>      // for sscanf, ...
 #include <thread>      // for sleep_for()
 
-
 auto g_base_path = "./data/";
 auto g_NameCam1 = "BellyCam";
 
@@ -70,30 +69,33 @@ std::string createMeasurementDir()
    return cam1Path;
 }
 
-std::string getCurrentLocalTime() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t time = std::chrono::system_clock::to_time_t(now);
-    std::tm* tm_time = std::localtime(&time);
-    char buffer[9];
-    std::strftime(buffer, sizeof(buffer), "%H:%M:%S", tm_time);
-    return buffer;
+std::string getCurrentLocalTime()
+{
+   auto now = std::chrono::system_clock::now();
+   std::time_t time = std::chrono::system_clock::to_time_t(now);
+   std::tm* tm_time = std::localtime(&time);
+   char buffer[9];
+   std::strftime(buffer, sizeof(buffer), "%H:%M:%S", tm_time);
+   return buffer;
 }
 
-int calculateTimeDifference(const std::string& target_time) {
-    std::string current_time = getCurrentLocalTime();
+int calculateTimeDifference(const std::string& target_time)
+{
+   std::string current_time = getCurrentLocalTime();
 
-    int target_hour, target_minute, target_second, current_hour, current_minute, current_second;
-    sscanf(target_time.c_str(), "%d:%d:%d", &target_hour, &target_minute, &target_second);
-    sscanf(current_time.c_str(), "%d:%d:%d", &current_hour, &current_minute, &current_second);
+   int target_hour, target_minute, target_second, current_hour, current_minute, current_second;
+   sscanf(target_time.c_str(), "%d:%d:%d", &target_hour, &target_minute, &target_second);
+   sscanf(current_time.c_str(), "%d:%d:%d", &current_hour, &current_minute, &current_second);
 
-    int target_total_seconds = target_hour * 3600 + target_minute * 60 + target_second;
-    int current_total_seconds = current_hour * 3600 + current_minute * 60 + current_second;
+   int target_total_seconds = target_hour * 3600 + target_minute * 60 + target_second;
+   int current_total_seconds = current_hour * 3600 + current_minute * 60 + current_second;
 
-    if (target_total_seconds <= current_total_seconds) {
-        return -1; // provided time is not in the future
-    }
+   if (target_total_seconds <= current_total_seconds)
+   {
+      return -1;  // provided time is not in the future
+   }
 
-    return (target_total_seconds - current_total_seconds) * 1000;
+   return (target_total_seconds - current_total_seconds) * 1000;
 }
 
 int main(int argc, char* argv[])
@@ -106,7 +108,8 @@ int main(int argc, char* argv[])
    int fps = 5;                    // set fps below 30 (at 30 the frame might be incomplete)
 
    // get starting time as argument
-   if (argc < 2) {
+   if (argc < 2)
+   {
       std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'" << std::endl;
       return 1;
    }
@@ -124,17 +127,18 @@ int main(int argc, char* argv[])
    // Start camera capturing
    cam1.startCapture();
 
-
-   // calculate time difference to target time 
+   // calculate time difference to target time
    std::string targetTime(argv[1]);
    int time_difference_milliseconds = calculateTimeDifference(targetTime);
 
-   if (time_difference_milliseconds < 0) {
+   if (time_difference_milliseconds < 0)
+   {
       std::cerr << "Starting time is not in the future!" << std::endl;
       return 1;
    }
 
-   std::cout << "Camera starts caputring, will wait for " << (time_difference_milliseconds / 1000) << "s to start with saving the images." << std::endl;
+   std::cout << "Camera starts caputring, will wait for " << (time_difference_milliseconds / 1000)
+             << "s to start with saving the images." << std::endl;
    std::this_thread::sleep_for(std::chrono::milliseconds(time_difference_milliseconds));
    std::cout << "Camera starts saving images now!" << std::endl;
 
@@ -155,7 +159,8 @@ int main(int argc, char* argv[])
       auto transformed = now.time_since_epoch().count() / 1000000;
       auto millis = transformed % 1000;
       std::stringstream datetime;
-      datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0') << int(millis);
+      datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0')
+               << int(millis);
 
       cv::imwrite(cam1Path + "/Right_" + datetime.str() + ".jpg", rightCam1);
       cv::imwrite(cam1Path + "/Left_" + datetime.str() + ".jpg", leftCam1);
