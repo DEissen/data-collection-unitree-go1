@@ -74,7 +74,7 @@ def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source):
 
     # print output of process
     for line in stdout:
-        print(f"Update for {ip_last_segment}: {line}")
+        print(f"Update for {target_ip_last_segment}: {line}")
 
     client.close()
 
@@ -119,6 +119,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
     duration = end_time - start_time
     corrected_start_time = start_time + (duration / 3) 
     
+    # calculate time diff where always the earlier time must be subtracted from the later time
     if (start_time > time_of_remote) and (corrected_start_time > time_of_remote):
         later_timestamp = "local PC"
         time_diff = (start_time - time_of_remote)
@@ -161,6 +162,7 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
         else:
             evaluated_later_timestamp = later_timestamp
 
+    # calculate average and standard deviation for each value using numpy
     time_diff_ar = np.asarray(time_diff_ar)
     corrected_time_diff_ar = np.asarray(corrected_time_diff_ar)
     duration_ar = np.asarray(duration_ar)
