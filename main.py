@@ -12,6 +12,10 @@ if __name__ == "__main__":
     iterations_time_diff_calculation = 10
     info_struct = {} # struct to add all data which shall be stored in injo.json
 
+    # store date of measurement
+    measurement_date = datetime.now().strftime("%d.%m.%Y")
+    info_struct["measurement_date"] = measurement_date
+
     # get time diff for all Go1 µCs and save them in the info_struct
     time_diff_13, corrected_time_diff_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
     time_diff_14, corrected_time_diff_14, later_timestamp_14 = camera_measurement.get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
