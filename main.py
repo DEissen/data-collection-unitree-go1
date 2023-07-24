@@ -2,7 +2,7 @@ import read_IMU_data.scripts.read_IMU as read_IMU
 import camera.src_local_PC.start_measurement as camera_measurement
 from datetime import datetime, timedelta
 import threading
-from custom_utils.utils import save_struct_as_json
+from custom_utils.utils import save_struct_as_json, get_floor_type_from_user
 
 
 if __name__ == "__main__":
@@ -15,6 +15,10 @@ if __name__ == "__main__":
     # store date of measurement
     measurement_date = datetime.now().strftime("%d.%m.%Y")
     info_struct["measurement_date"] = measurement_date
+
+    # get user input about floor type to be logged in info.json
+    floor_type = get_floor_type_from_user()
+    info_struct["floor type"] = floor_type
 
     # get time diff for all Go1 µCs and save them in the info_struct
     time_diff_13, corrected_time_diff_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
