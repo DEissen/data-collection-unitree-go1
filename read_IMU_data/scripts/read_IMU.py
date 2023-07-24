@@ -168,61 +168,63 @@ class ReadImuDataGo1(threading.Thread):
 
 
     def save_logs(self):
-        # convert the lists to numpy arrays and save them
-        self.mode_ar = np.asarray(self.mode_ar)
-        np.savetxt(os.path.join(self.mode_data_dir,
-                f"{self.measurement_timestamp}.csv"), self.mode_ar, delimiter=";")
+        # save logs is only possible if logging was started
+        if self.start_logging:
+            # convert the lists to numpy arrays and save them
+            self.mode_ar = np.asarray(self.mode_ar)
+            np.savetxt(os.path.join(self.mode_data_dir,
+                    f"{self.measurement_timestamp}.csv"), self.mode_ar, delimiter=";")
 
-        self.bodyHeight_ar = np.asarray(self.bodyHeight_ar)
-        np.savetxt(os.path.join(self.bodyHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                self.bodyHeight_ar, delimiter=";")
+            self.bodyHeight_ar = np.asarray(self.bodyHeight_ar)
+            np.savetxt(os.path.join(self.bodyHeight_data_dir, f"{self.measurement_timestamp}.csv"),
+                    self.bodyHeight_ar, delimiter=";")
 
-        self.footRaiseHeight_ar = np.asarray(self.footRaiseHeight_ar)
-        np.savetxt(os.path.join(self.footRaiseHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                self.footRaiseHeight_ar, delimiter=";")
+            self.footRaiseHeight_ar = np.asarray(self.footRaiseHeight_ar)
+            np.savetxt(os.path.join(self.footRaiseHeight_data_dir, f"{self.measurement_timestamp}.csv"),
+                    self.footRaiseHeight_ar, delimiter=";")
 
-        self.yawSpeed_ar = np.asarray(self.yawSpeed_ar)
-        np.savetxt(os.path.join(
-            self.yawSpeed_data_dir, f"{self.measurement_timestamp}.csv"), self.yawSpeed_ar, delimiter=";")
+            self.yawSpeed_ar = np.asarray(self.yawSpeed_ar)
+            np.savetxt(os.path.join(
+                self.yawSpeed_data_dir, f"{self.measurement_timestamp}.csv"), self.yawSpeed_ar, delimiter=";")
 
-        self.footForce_ar = np.asarray(self.footForce_ar)
-        np.savetxt(os.path.join(self.footForce_data_dir, f"{self.measurement_timestamp}.csv"),
-                self.footForce_ar, delimiter=";")
+            self.footForce_ar = np.asarray(self.footForce_ar)
+            np.savetxt(os.path.join(self.footForce_data_dir, f"{self.measurement_timestamp}.csv"),
+                    self.footForce_ar, delimiter=";")
 
-        self.velocity_ar = np.asarray(self.velocity_ar)
-        np.savetxt(os.path.join(
-            self.velocity_data_dir, f"{self.measurement_timestamp}.csv"), self.velocity_ar, delimiter=";")
+            self.velocity_ar = np.asarray(self.velocity_ar)
+            np.savetxt(os.path.join(
+                self.velocity_data_dir, f"{self.measurement_timestamp}.csv"), self.velocity_ar, delimiter=";")
 
-        self.gyroscope_ar = np.asarray(self.gyroscope_ar)
-        np.savetxt(os.path.join(self.gyroscope_data_dir, f"{self.measurement_timestamp}.csv"),
-                self.gyroscope_ar, delimiter=";")
+            self.gyroscope_ar = np.asarray(self.gyroscope_ar)
+            np.savetxt(os.path.join(self.gyroscope_data_dir, f"{self.measurement_timestamp}.csv"),
+                    self.gyroscope_ar, delimiter=";")
 
-        self.accelerometer_ar = np.asarray(self.accelerometer_ar)
-        np.savetxt(os.path.join(self.accelerometer_data_dir, f"{self.measurement_timestamp}.csv"),
-                self.accelerometer_ar, delimiter=";")
+            self.accelerometer_ar = np.asarray(self.accelerometer_ar)
+            np.savetxt(os.path.join(self.accelerometer_data_dir, f"{self.measurement_timestamp}.csv"),
+                    self.accelerometer_ar, delimiter=";")
 
-        self.rpy_ar = np.asarray(self.rpy_ar)
-        np.savetxt(os.path.join(
-            self.rpy_data_dir, f"{self.measurement_timestamp}.csv"), self.rpy_ar, delimiter=";")
+            self.rpy_ar = np.asarray(self.rpy_ar)
+            np.savetxt(os.path.join(
+                self.rpy_data_dir, f"{self.measurement_timestamp}.csv"), self.rpy_ar, delimiter=";")
 
-        self.temperature_ar = np.asarray(self.temperature_ar)
-        np.savetxt(os.path.join(self.rpy_data_dir, f"{self.measurement_timestamp}.csv"),
-                self.temperature_ar, delimiter=";")
+            self.temperature_ar = np.asarray(self.temperature_ar)
+            np.savetxt(os.path.join(self.rpy_data_dir, f"{self.measurement_timestamp}.csv"),
+                    self.temperature_ar, delimiter=";")
 
-        # reset lists for next measurement
-        self.mode_ar = []
-        self.bodyHeight_ar = []
-        self.footRaiseHeight_ar = []
-        self.yawSpeed_ar = []
-        self.footForce_ar = []
-        self.velocity_ar = []
-        self.gyroscope_ar = []
-        self.accelerometer_ar = []
-        self.rpy_ar = []
-        self.temperature_ar = []
+            # reset lists for next measurement
+            self.mode_ar = []
+            self.bodyHeight_ar = []
+            self.footRaiseHeight_ar = []
+            self.yawSpeed_ar = []
+            self.footForce_ar = []
+            self.velocity_ar = []
+            self.gyroscope_ar = []
+            self.accelerometer_ar = []
+            self.rpy_ar = []
+            self.temperature_ar = []
 
-        # get new measurement timestamp
-        self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
+            # get new measurement timestamp
+            self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
 
     def create_measurement_folder(self):
         # create folder for results (if it does not exist yet)
