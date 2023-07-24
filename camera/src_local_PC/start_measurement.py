@@ -2,6 +2,7 @@ import paramiko
 import threading
 from datetime import datetime, timedelta
 import os
+import numpy as np
 import subprocess
 
 def execute_command_via_ssh(ip_addr, pwd, command):
@@ -90,7 +91,7 @@ def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
     p = subprocess.Popen(["sshpass", "-p", "123", "ssh", ssh_target, "sudo", "date", date_format])
     sts = os.waitpid(p.pid, 0)
 
-def get_time_diff(ip_last_segment, remote_username):
+def get_time_diff(ip_last_segment, remote_username, print_info=False):
     # ideas:
     #  - correct time diff by duration, e.g. add 1/3 of duration to start_time
     #  - determine time_diff for multiple times (e.g. 10 times), as result is not always the same
@@ -114,20 +115,64 @@ def get_time_diff(ip_last_segment, remote_username):
     # convert time_of_remote to datetime object
     time_of_remote = datetime.strptime(time_of_remote, '%Y-%m-%d %H:%M:%S.%f')
     
+    # calculate duration and corrected start time which will be increased by 1/3 of the duration
     duration = end_time - start_time
+    corrected_start_time = start_time + (duration / 3) 
     
-    if start_time > time_of_remote:
+    if (start_time > time_of_remote) and (corrected_start_time > time_of_remote):
         later_timestamp = "local PC"
         time_diff = (start_time - time_of_remote)
-    else:
+        corrected_time_diff = (corrected_start_time - time_of_remote)
+    elif (start_time > time_of_remote) and (corrected_start_time < time_of_remote):
+        later_timestamp = "local PC (only uncorrected)"
+        time_diff = (start_time - time_of_remote)
+        corrected_time_diff = (time_of_remote - corrected_start_time)
+    elif (start_time < time_of_remote) and (corrected_start_time < time_of_remote):
         later_timestamp = "remote PC"
-        time_diff = time_of_remote - start_time
+        time_diff = (time_of_remote - start_time)
+        corrected_time_diff = (time_of_remote - corrected_start_time)
+    else:
+        # should not be possible, thus throw and exception
+        raise Exception("Problem with timediff calculation.")
 
-    print(start_time)
-    print(time_of_remote)
-    print(f"{later_timestamp} is later timestamp by: {time_diff}\nOperation took {duration}")
+    if print_info:
+        print(f"{later_timestamp} is later timestamp by: {time_diff}\nOperation took {duration}")
 
-    return time_diff
+    return time_diff, corrected_time_diff, duration, start_time, time_of_remote
+
+def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print_info=False):
+    time_diff_ar = []
+    corrected_time_diff_ar = []
+    duration_ar = []
+    start_time_ar = []
+    time_of_remote_ar = []
+
+    for _ in range(iterations):
+        time_diff, corrected_time_diff, duration, start_time, time_of_remote = get_time_diff(ip_last_segment, remote_username)
+        time_diff_ar.append(time_diff.microseconds/1000)
+        corrected_time_diff_ar.append(corrected_time_diff.microseconds/1000)
+        duration_ar.append(duration.microseconds/1000)
+        start_time_ar.append(start_time)
+        time_of_remote_ar.append(time_of_remote)
+
+    time_diff_ar = np.asarray(time_diff_ar)
+    corrected_time_diff_ar = np.asarray(corrected_time_diff_ar)
+    duration_ar = np.asarray(duration_ar)
+    
+    time_diff_mean = np.mean(time_diff_ar)
+    time_diff_std = np.std(time_diff_ar)
+    corrected_time_diff_mean = np.mean(corrected_time_diff_ar)
+    corrected_time_diff_std = np.std(corrected_time_diff_ar)
+    duration_mean = np.mean(duration_ar)
+    duration_std = np.std(duration_ar)
+
+    if print_info:
+        print(f"For {ip_last_segment} the mean time diff is: {time_diff_mean:.3f} +- {time_diff_std:.3f} ms")
+        print(f"For {ip_last_segment} the mean corrected time diff is: {corrected_time_diff_mean:.3f} +- {corrected_time_diff_std:.3f} ms")
+        print(f"For {ip_last_segment} the mean duration is: {duration_mean:.3f} +- {duration_std:.3f} ms")
+
+    return time_diff_mean, corrected_time_diff_mean
+
 
 
 if __name__ == "__main__":
@@ -139,6 +184,7 @@ if __name__ == "__main__":
     set_time = False
     user_time_source = "eissen"
     ip_time_source = "192.168.123.52"
+    iterations_time_diff_calculation = 10
 
     # first set time for all µCs if selected by set_time flag
     # NOTE: Not possible yet, instead run the file /home/unitree/Documents/set_time.sh on the remote by your own!
@@ -149,10 +195,10 @@ if __name__ == "__main__":
     #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
     # TODO: do someting with time_diff, most likely log it and correct timestamps afterwards
-    time_diff_13 = get_time_diff(13, "unitree")
-    time_diff_14 = get_time_diff(14, "unitree")
-    time_diff_15 = get_time_diff(15, "unitree")
-    time_diff_pi = get_time_diff(161, "pi")
+    time_diff_13, corrected_time_diff_13 = get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14 = get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_pi, corrected_time_diff_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
 
     Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, start_time_string, ))
     Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, start_time_string, ))
