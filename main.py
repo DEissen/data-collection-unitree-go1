@@ -1,5 +1,5 @@
 import read_IMU_data.scripts.read_IMU as read_IMU
-import camera.src_local_PC.start_measurement as camera_measurement, get_average_time_diff_ms
+import camera.src_local_PC.start_measurement as camera_measurement
 from datetime import datetime, timedelta
 import threading
 from custom_utils.utils import save_struct_as_json
@@ -13,15 +13,15 @@ if __name__ == "__main__":
     info_struct = {} # struct to add all data which shall be stored in injo.json
 
     # get time diff for all Go1 µCs and save them in the info_struct
-    time_diff_13, corrected_time_diff_13 = get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
-    time_diff_14, corrected_time_diff_14 = get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
-    time_diff_15, corrected_time_diff_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
-    time_diff_pi, corrected_time_diff_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
+    time_diff_13, corrected_time_diff_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14, later_timestamp_14 = camera_measurement.get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15, later_timestamp_15 = camera_measurement.get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_pi, corrected_time_diff_pi, later_timestamp_pi = camera_measurement.get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
 
-    info_struct["time_diff_13"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13}
-    info_struct["time_diff_14"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14}
-    info_struct["time_diff_15"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15}
-    info_struct["time_diff_pi"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi}
+    info_struct["time_diff_13_in_ms"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13, "later timestamp on": later_timestamp_13}
+    info_struct["time_diff_14_in_ms"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14, "later timestamp on": later_timestamp_14}
+    info_struct["time_diff_15_in_ms"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15, "later timestamp on": later_timestamp_15}
+    info_struct["time_diff_pi_in_ms"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi, "later timestamp on": later_timestamp_pi}
 
     # set starting time for all threads to 30 seconds in the future
     start_time = datetime.now() + timedelta(seconds=30)

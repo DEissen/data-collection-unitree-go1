@@ -138,7 +138,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
     if print_info:
         print(f"{later_timestamp} is later timestamp by: {time_diff}\nOperation took {duration}")
 
-    return time_diff, corrected_time_diff, duration, start_time, time_of_remote
+    return time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp
 
 def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print_info=False):
     time_diff_ar = []
@@ -146,14 +146,20 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
     duration_ar = []
     start_time_ar = []
     time_of_remote_ar = []
+    evaluated_later_timestamp = ""
 
     for _ in range(iterations):
-        time_diff, corrected_time_diff, duration, start_time, time_of_remote = get_time_diff(ip_last_segment, remote_username)
+        time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp = get_time_diff(ip_last_segment, remote_username)
         time_diff_ar.append(time_diff.microseconds/1000)
         corrected_time_diff_ar.append(corrected_time_diff.microseconds/1000)
         duration_ar.append(duration.microseconds/1000)
         start_time_ar.append(start_time)
         time_of_remote_ar.append(time_of_remote)
+        # check if entry for later timestamp is the same always
+        if later_timestamp != evaluated_later_timestamp and evaluated_later_timestamp != "":
+            evaluated_later_timestamp = "inconsistent"
+        else:
+            evaluated_later_timestamp = later_timestamp
 
     time_diff_ar = np.asarray(time_diff_ar)
     corrected_time_diff_ar = np.asarray(corrected_time_diff_ar)
@@ -171,7 +177,7 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
         print(f"For {ip_last_segment} the mean corrected time diff is: {corrected_time_diff_mean:.3f} +- {corrected_time_diff_std:.3f} ms")
         print(f"For {ip_last_segment} the mean duration is: {duration_mean:.3f} +- {duration_std:.3f} ms")
 
-    return time_diff_mean, corrected_time_diff_mean
+    return time_diff_mean, corrected_time_diff_mean, evaluated_later_timestamp
 
 
 
@@ -192,10 +198,10 @@ if __name__ == "__main__":
     #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
     # TODO: do someting with time_diff, most likely log it and correct timestamps afterwards
-    time_diff_13, corrected_time_diff_13 = get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
-    time_diff_14, corrected_time_diff_14 = get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
-    time_diff_15, corrected_time_diff_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
-    time_diff_pi, corrected_time_diff_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
+    time_diff_13, corrected_time_diff_13, later_timestamp_13 = get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14, later_timestamp_14 = get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15, later_timestamp_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_pi, corrected_time_diff_pi, later_timestamp_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
 
     # set starting time for all threads to 30 seconds in the future
     start_time = datetime.now() + timedelta(seconds=30)
