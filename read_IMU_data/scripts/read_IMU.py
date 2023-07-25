@@ -26,7 +26,6 @@ class ReadImuDataGo1(threading.Thread):
         # all data seems to be sampled with 50 Hz (9 - 10 equal measurements when self.sleep_in_seconds is 0.002)
         # => use at least 0.01 as self.sleep_in_seconds
         self.sleep_in_seconds = 0.01
-        self.measurement_duration = 600
         self.log_interval = 10
         self.measurement_timestamp = 0
 
@@ -138,10 +137,6 @@ class ReadImuDataGo1(threading.Thread):
                 # log in the specified interval
                 if self.start_logging and ((self.runCounter * self.sleep_in_seconds) % self.log_interval == 0):
                     self.save_logs()
-
-                # end measurement after specified time
-                if self.runCounter > self.measurement_duration / self.sleep_in_seconds:
-                    sys.exit(0)
 
                 # prepare and send high level command to do nothing!
                 self.cmd.mode = 0      # 0:idle, default stand      1:forced stand     2:walk continuously

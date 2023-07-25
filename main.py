@@ -32,7 +32,7 @@ if __name__ == "__main__":
     info_struct["time_diff_pi_in_ms"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi, "duration": duration_mean_pi, "later timestamp on": later_timestamp_pi}
 
     # set starting time for all threads to 30 seconds in the future
-    start_time = datetime.now() + timedelta(seconds=30)
+    start_time = datetime.now() + timedelta(seconds=15)
     start_time_string = start_time.strftime("%H:%M:%S")
     info_struct["starting_time"] = start_time_string
     
