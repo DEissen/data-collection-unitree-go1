@@ -62,7 +62,7 @@ if __name__ == "__main__":
             running.clear()
 
     # log end time of the measurement
-    end_time = datetime.now() + timedelta(seconds=15)
+    end_time = datetime.now()
     end_time_string = end_time.strftime("%H:%M:%S")
     info_struct["end_time"] = end_time_string
     print(f"Stopped all threads at {end_time_string}")
