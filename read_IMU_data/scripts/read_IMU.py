@@ -16,7 +16,7 @@ import robot_interface as sdk  # nopep8
 
 
 class ReadImuDataGo1(threading.Thread):
-    def __init__(self, running, use_LAN, starting_time: datetime):
+    def __init__(self, running, use_LAN, measurement_base_path, starting_time: datetime):
         super().__init__() # call init of super class to enable usage as thread
         # initialize members
         self.runCounter = 0
@@ -30,7 +30,8 @@ class ReadImuDataGo1(threading.Thread):
         self.measurement_timestamp = 0
 
         self.running = running
-        self.starting_time = starting_time
+        # Thread must start one second earlier, as the programm will wait one second till it starts logging
+        self.starting_time = starting_time - timedelta(seconds=1)
 
         self.HIGHLEVEL = 0xee
         self.LOWLEVEL = 0xff
@@ -48,7 +49,7 @@ class ReadImuDataGo1(threading.Thread):
         self.temperature_ar = []
 
         # create measurement directory and get paths for the sensors
-        self.create_measurement_folder()
+        self.create_measurement_folder(measurement_base_path)
 
         if use_LAN:
             self.ip_addr ="192.168.123.161"
@@ -83,6 +84,7 @@ class ReadImuDataGo1(threading.Thread):
                     self.info_printed_once = True
                     self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
                     self.start_logging = True
+                    print("\nIMU measurement starts now\n")
 
                 # log everything that seems to be interesting every iteration after general info was logged once
                 if self.start_logging:
@@ -160,6 +162,7 @@ class ReadImuDataGo1(threading.Thread):
 
         # save logs in case running is not set anymore by external source to not miss any data
         self.save_logs()
+        print("Stopped IMU logging at :", datetime.now().strftime("%H:%M:%S,%f")[:-3])
 
 
     def save_logs(self):
@@ -221,10 +224,10 @@ class ReadImuDataGo1(threading.Thread):
             # get new measurement timestamp
             self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
 
-    def create_measurement_folder(self):
+    def create_measurement_folder(self, measurement_base_path):
         # create folder for results (if it does not exist yet)
         measurement_dir_timestamp = datetime.now().strftime("%d_%m__%H_%M")
-        self.path_measurement_dir = f"./measurement_{measurement_dir_timestamp}"
+        self.path_measurement_dir = f"{measurement_base_path}/measurement_{measurement_dir_timestamp}"
 
         self.mode_data_dir = f"{self.path_measurement_dir}/mode"
         self.bodyHeight_data_dir = f"{self.path_measurement_dir}/bodyHeight"
@@ -255,7 +258,7 @@ if __name__ == '__main__':
     running = threading.Event()
     running.set()
 
-    imu_thread = ReadImuDataGo1(running, use_LAN=True, starting_time=start_time)
+    imu_thread = ReadImuDataGo1(running, use_LAN=True, measurement_base_path=".", starting_time=start_time)
 
     imu_thread.start()
 
