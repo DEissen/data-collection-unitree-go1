@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
       return 1;
    }
 
-   std::cout << "Cameras start caputring, will wait for " << (time_difference_milliseconds / 1000)
+   std::cout << "Cameras start capturing, will wait for " << (time_difference_milliseconds / 1000)
              << "s to start with saving the images." << std::endl;
    std::this_thread::sleep_for(std::chrono::milliseconds(time_difference_milliseconds));
    std::cout << "Cameras start saving images now!" << std::endl;
