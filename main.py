@@ -21,15 +21,15 @@ if __name__ == "__main__":
     info_struct["floor type"] = floor_type
 
     # get time diff for all Go1 µCs and save them in the info_struct
-    time_diff_13, corrected_time_diff_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
-    time_diff_14, corrected_time_diff_14, later_timestamp_14 = camera_measurement.get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
-    time_diff_15, corrected_time_diff_15, later_timestamp_15 = camera_measurement.get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
-    time_diff_pi, corrected_time_diff_pi, later_timestamp_pi = camera_measurement.get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
+    time_diff_13, corrected_time_diff_13, duration_mean_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14, duration_mean_14, later_timestamp_14 = camera_measurement.get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15, duration_mean_15, later_timestamp_15 = camera_measurement.get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_pi, corrected_time_diff_pi, duration_mean_pi, later_timestamp_pi = camera_measurement.get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
 
-    info_struct["time_diff_13_in_ms"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13, "later timestamp on": later_timestamp_13}
-    info_struct["time_diff_14_in_ms"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14, "later timestamp on": later_timestamp_14}
-    info_struct["time_diff_15_in_ms"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15, "later timestamp on": later_timestamp_15}
-    info_struct["time_diff_pi_in_ms"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi, "later timestamp on": later_timestamp_pi}
+    info_struct["time_diff_13_in_ms"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13, "duration": duration_mean_13, "later timestamp on": later_timestamp_13}
+    info_struct["time_diff_14_in_ms"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14, "duration": duration_mean_14, "later timestamp on": later_timestamp_14}
+    info_struct["time_diff_15_in_ms"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15, "duration": duration_mean_15, "later timestamp on": later_timestamp_15}
+    info_struct["time_diff_pi_in_ms"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi, "duration": duration_mean_pi, "later timestamp on": later_timestamp_pi}
 
     # set starting time for all threads to 30 seconds in the future
     start_time = datetime.now() + timedelta(seconds=30)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
             running.clear()
 
     # log end time of the measurement
-    end_time = datetime.now() + timedelta(seconds=30)
+    end_time = datetime.now() + timedelta(seconds=15)
     end_time_string = end_time.strftime("%H:%M:%S")
     info_struct["end_time"] = end_time_string
 

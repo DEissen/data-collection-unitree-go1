@@ -41,11 +41,9 @@ def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
     # append command to execute camera executable
     if ip_last_segment == 15:
         # Nano with IP 15 has only one camera
-        commands.append("./bins/getFrameOneCamera")
+        commands.append(f"./bins/getFrameOneCamera {starting_time_string}")
     else:
-        commands.append("./bins/getFrameTwoCameras")
-
-    commands.append(starting_time_string)
+        commands.append(f"./bins/getFrameTwoCameras {starting_time_string}")
 
     # prepare command string and execute the commands
     command_string = "; ".join(commands)
@@ -117,7 +115,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
 
     # calculate duration and corrected start time which will be increased by 1/3 of the duration
     duration = end_time - start_time
-    corrected_start_time = start_time + (duration / 3)
+    corrected_start_time = start_time #+ (duration / 3)
 
     # calculate time diff where always the earlier time must be subtracted from the later time
     if (start_time > time_of_remote) and (corrected_start_time > time_of_remote):
@@ -182,7 +180,7 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
         print(
             f"For {ip_last_segment} the mean duration is: {duration_mean:.3f} +- {duration_std:.3f} ms")
 
-    return time_diff_mean, corrected_time_diff_mean, evaluated_later_timestamp
+    return time_diff_mean, corrected_time_diff_mean, duration_mean, evaluated_later_timestamp
 
 def convert_timedelta_to_ms(timedelta_to_convert: timedelta):
     # timedelta stores time split in microsecond, seconds an days -> for total ms all three must be converted to ms
@@ -205,13 +203,13 @@ if __name__ == "__main__":
     #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
     # TODO: do someting with time_diff, most likely log it and correct timestamps afterwards
-    time_diff_13, corrected_time_diff_13, later_timestamp_13 = get_average_time_diff_ms(
+    time_diff_13, corrected_time_diff_13, duration_mean_13, later_timestamp_13 = get_average_time_diff_ms(
         13, "unitree", iterations_time_diff_calculation, True)
-    time_diff_14, corrected_time_diff_14, later_timestamp_14 = get_average_time_diff_ms(
+    time_diff_14, corrected_time_diff_14, duration_mean_14, later_timestamp_14 = get_average_time_diff_ms(
         14, "unitree", iterations_time_diff_calculation, True)
-    time_diff_15, corrected_time_diff_15, later_timestamp_15 = get_average_time_diff_ms(
+    time_diff_15, corrected_time_diff_15, duration_mean_15, later_timestamp_15 = get_average_time_diff_ms(
         15, "unitree", iterations_time_diff_calculation, True)
-    time_diff_pi, corrected_time_diff_pi, later_timestamp_pi = get_average_time_diff_ms(
+    time_diff_pi, corrected_time_diff_pi, duration_mean_pi, later_timestamp_pi = get_average_time_diff_ms(
         161, "pi", iterations_time_diff_calculation, True)
 
     # set starting time for all threads to 30 seconds in the future
