@@ -12,8 +12,7 @@ if __name__ == "__main__":
     running.set()
     iterations_time_diff_calculation = 10
     info_struct = {} # struct to add all data which shall be stored in injo.json
-    measurement_base_path_for_copy = "/home/eissen/measurements"
-    measurement_base_path = measurement_base_path_for_copy + "/data"
+    measurement_base_path = "/home/eissen/measurements/data"
 
     # store date of measurement
     measurement_date = datetime.now().strftime("%d.%m.%Y")
@@ -68,9 +67,3 @@ if __name__ == "__main__":
 
     # save info_struct to info.json in measurement dir
     save_struct_as_json(imu_thread.path_measurement_dir, "info.json", info_struct)
-
-    print("Measurement was stopped properly, images will be copied now.")
-
-    copy_images.copy_captured_images_with_sshpass(13, measurement_base_path_for_copy, True)
-    copy_images.copy_captured_images_with_sshpass(14, measurement_base_path_for_copy, True)
-    copy_images.copy_captured_images_with_sshpass(15, measurement_base_path_for_copy, True)

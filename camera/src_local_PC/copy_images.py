@@ -37,11 +37,7 @@ def copy_captured_images_with_sshpass(ip_last_segment, destination, delete_files
 
 if __name__ == "__main__":
     destination = "/home/eissen/measurements"
-
-    # copy_captured_images(13, destination)
-    # copy_captured_images(14, destination)
-    # copy_captured_images(15, destination)
-
+    
     copy_captured_images_with_sshpass(13, destination, True)
     copy_captured_images_with_sshpass(14, destination, True)
     copy_captured_images_with_sshpass(15, destination, True)
