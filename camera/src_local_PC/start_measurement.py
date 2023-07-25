@@ -114,11 +114,11 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
 
     # convert time_of_remote to datetime object
     time_of_remote = datetime.strptime(time_of_remote, '%Y-%m-%d %H:%M:%S.%f')
-    
+
     # calculate duration and corrected start time which will be increased by 1/3 of the duration
     duration = end_time - start_time
-    corrected_start_time = start_time + (duration / 3) 
-    
+    corrected_start_time = start_time + (duration / 3)
+
     # calculate time diff where always the earlier time must be subtracted from the later time
     if (start_time > time_of_remote) and (corrected_start_time > time_of_remote):
         later_timestamp = "local PC"
@@ -137,7 +137,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
         raise Exception("Problem with timediff calculation.")
 
     if print_info:
-        print(f"{later_timestamp} is later timestamp by: {time_diff}\nOperation took {duration}")
+        print(f"{later_timestamp} is later timestamp by: {time_diff}, corrected timediff is {corrected_time_diff}\nOperation took {duration}")
 
     return time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp
 
@@ -150,10 +150,11 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
     evaluated_later_timestamp = ""
 
     for _ in range(iterations):
-        time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp = get_time_diff(ip_last_segment, remote_username)
-        time_diff_ar.append(time_diff.microseconds/1000)
-        corrected_time_diff_ar.append(corrected_time_diff.microseconds/1000)
-        duration_ar.append(duration.microseconds/1000)
+        time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp = get_time_diff(
+            ip_last_segment, remote_username)
+        time_diff_ar.append(convert_timedelta_to_ms(time_diff))
+        corrected_time_diff_ar.append(convert_timedelta_to_ms(corrected_time_diff))
+        duration_ar.append(convert_timedelta_to_ms(duration))
         start_time_ar.append(start_time)
         time_of_remote_ar.append(time_of_remote)
         # check if entry for later timestamp is the same always
@@ -166,7 +167,7 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
     time_diff_ar = np.asarray(time_diff_ar)
     corrected_time_diff_ar = np.asarray(corrected_time_diff_ar)
     duration_ar = np.asarray(duration_ar)
-    
+
     time_diff_mean = np.mean(time_diff_ar)
     time_diff_std = np.std(time_diff_ar)
     corrected_time_diff_mean = np.mean(corrected_time_diff_ar)
@@ -175,13 +176,17 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
     duration_std = np.std(duration_ar)
 
     if print_info:
-        print(f"For {ip_last_segment} the mean time diff is: {time_diff_mean:.3f} +- {time_diff_std:.3f} ms")
+        print(
+            f"For {ip_last_segment} the mean time diff is: {time_diff_mean:.3f} +- {time_diff_std:.3f} ms")
         print(f"For {ip_last_segment} the mean corrected time diff is: {corrected_time_diff_mean:.3f} +- {corrected_time_diff_std:.3f} ms")
-        print(f"For {ip_last_segment} the mean duration is: {duration_mean:.3f} +- {duration_std:.3f} ms")
+        print(
+            f"For {ip_last_segment} the mean duration is: {duration_mean:.3f} +- {duration_std:.3f} ms")
 
     return time_diff_mean, corrected_time_diff_mean, evaluated_later_timestamp
 
-
+def convert_timedelta_to_ms(timedelta_to_convert: timedelta):
+    # timedelta stores time split in microsecond, seconds an days -> for total ms all three must be converted to ms
+    return timedelta_to_convert.microseconds/1000 + timedelta_to_convert.seconds * 1000 + timedelta_to_convert.days * 24 * 60 * 60 * 1000
 
 if __name__ == "__main__":
     # variables for main
@@ -200,19 +205,26 @@ if __name__ == "__main__":
     #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
     # TODO: do someting with time_diff, most likely log it and correct timestamps afterwards
-    time_diff_13, corrected_time_diff_13, later_timestamp_13 = get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
-    time_diff_14, corrected_time_diff_14, later_timestamp_14 = get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
-    time_diff_15, corrected_time_diff_15, later_timestamp_15 = get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
-    time_diff_pi, corrected_time_diff_pi, later_timestamp_pi = get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
+    time_diff_13, corrected_time_diff_13, later_timestamp_13 = get_average_time_diff_ms(
+        13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14, later_timestamp_14 = get_average_time_diff_ms(
+        14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15, later_timestamp_15 = get_average_time_diff_ms(
+        15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_pi, corrected_time_diff_pi, later_timestamp_pi = get_average_time_diff_ms(
+        161, "pi", iterations_time_diff_calculation, True)
 
     # set starting time for all threads to 30 seconds in the future
     start_time = datetime.now() + timedelta(seconds=30)
     start_time_string = start_time.strftime("%H:%M:%S")
 
     # create and start all measurement threads to get all data in parallel
-    Nano13_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(13, start_time_string, ))
-    Nano14_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(14, start_time_string, ))
-    Nano15_thread = threading.Thread(target=start_camera_measurement_via_ssh, args=(15, start_time_string, ))
+    Nano13_thread = threading.Thread(
+        target=start_camera_measurement_via_ssh, args=(13, start_time_string, ))
+    Nano14_thread = threading.Thread(
+        target=start_camera_measurement_via_ssh, args=(14, start_time_string, ))
+    Nano15_thread = threading.Thread(
+        target=start_camera_measurement_via_ssh, args=(15, start_time_string, ))
 
     # set Nano threads to deamon threads, so they will be automatically killed when imu_thread ends
     Nano13_thread.daemon = True
