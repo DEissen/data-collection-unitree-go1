@@ -110,12 +110,13 @@ int main(int argc, char* argv[])
 
    cv::Size frameSize(1856, 800);  // defalut image size: 1856 X 800
    int fps = 5;                    // set fps below 30 (at 30 the frame might be incomplete)
+   bool skipStartTimeCalc = false;
 
    // get starting time as argument
    if (argc < 2)
    {
-      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'" << std::endl;
-      return 1;
+      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'. Thus program will start without delay." << std::endl;
+      skipStartTimeCalc = true;
    }
 
    UnitreeCamera cam1(deviceNode1);
@@ -138,8 +139,16 @@ int main(int argc, char* argv[])
    cam2.startCapture();
 
    // calculate time difference to target time
-   std::string targetTime(argv[1]);
-   int time_difference_milliseconds = calculateTimeDifference(targetTime);
+   int time_difference_milliseconds;
+   if (!skipStartTimeCalc)
+   {
+      std::string targetTime(argv[1]);
+      time_difference_milliseconds = calculateTimeDifference(targetTime);
+   }
+   else
+   {
+      time_difference_milliseconds = 0;
+   }
 
    if (time_difference_milliseconds < 0)
    {
@@ -150,23 +159,13 @@ int main(int argc, char* argv[])
    std::cout << "Cameras start caputring, will wait for " << (time_difference_milliseconds / 1000)
              << "s to start with saving the images." << std::endl;
    std::this_thread::sleep_for(std::chrono::milliseconds(time_difference_milliseconds));
-   std::cout << "Cameras start saving images now!";
+   std::cout << "Cameras start saving images now!" << std::endl;
 
    while (cam1.isOpened() && cam2.isOpened())
    {
       // get images or wait if they are not present yet
       cv::Mat leftCam1, rightCam1, leftCam2, rightCam2;
       std::chrono::microseconds t;
-      if (!cam1.getStereoFrame(leftCam1, rightCam1, t))
-      {  ///< get camera raw image
-         usleep(500);
-         continue;
-      }
-      if (!cam2.getStereoFrame(leftCam2, rightCam2, t))
-      {  ///< get camera raw image
-         usleep(500);
-         continue;
-      }
 
       // get time for filename
       auto const now = std::chrono::system_clock::now();
@@ -177,11 +176,32 @@ int main(int argc, char* argv[])
       datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0')
                << int(millis);
 
+      // store image if received
+      if (cam1.getStereoFrame(leftCam1, rightCam1, t))
+      {
       cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rightCam1);
       cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Left_" + datetime.str() + ".jpg", leftCam1);
-
-      cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rightCam2);
-      cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
+         // check if images on cam2 are also available
+         if (cam2.getStereoFrame(leftCam2, rightCam2, t))
+         {
+            cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rightCam2);
+            cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
+         }
+         else
+         {
+            std::cout << "Only image cam1 was available!" << std::endl;
+         }
+      }
+      else if (cam2.getStereoFrame(leftCam2, rightCam2, t))
+      {
+         cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rightCam2);
+         cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
+         std::cout << "Only image cam2 was available!" << std::endl;
+      }
+      else
+      {
+         usleep(500);
+      }
    }
 
    // stop camera capturing

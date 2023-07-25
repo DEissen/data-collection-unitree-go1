@@ -106,12 +106,13 @@ int main(int argc, char* argv[])
 
    cv::Size frameSize(1856, 800);  // defalut image size: 1856 X 800
    int fps = 5;                    // set fps below 30 (at 30 the frame might be incomplete)
+   bool skipStartTimeCalc = false;
 
    // get starting time as argument
    if (argc < 2)
    {
-      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'" << std::endl;
-      return 1;
+      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'. Thus program will start without delay." << std::endl;
+      skipStartTimeCalc = true;
    }
 
    UnitreeCamera cam1(deviceNode1);
@@ -128,8 +129,16 @@ int main(int argc, char* argv[])
    cam1.startCapture();
 
    // calculate time difference to target time
-   std::string targetTime(argv[1]);
-   int time_difference_milliseconds = calculateTimeDifference(targetTime);
+   int time_difference_milliseconds;
+   if (!skipStartTimeCalc)
+   {
+      std::string targetTime(argv[1]);
+      time_difference_milliseconds = calculateTimeDifference(targetTime);
+   }
+   else
+   {
+      time_difference_milliseconds = 0;
+   }
 
    if (time_difference_milliseconds < 0)
    {
