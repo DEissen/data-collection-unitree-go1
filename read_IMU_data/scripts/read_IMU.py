@@ -162,8 +162,6 @@ class ReadImuDataGo1(threading.Thread):
 
         # save logs in case running is not set anymore by external source to not miss any data
         self.save_logs()
-        print("Stopped IMU logging at :", datetime.now().strftime("%H:%M:%S,%f")[:-3])
-
 
     def save_logs(self):
         # save logs is only possible if logging was started

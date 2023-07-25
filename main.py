@@ -65,7 +65,6 @@ if __name__ == "__main__":
     end_time = datetime.now()
     end_time_string = end_time.strftime("%H:%M:%S")
     info_struct["end_time"] = end_time_string
-    print(f"Stopped all threads at {end_time_string}")
 
     # save info_struct to info.json in measurement dir
     save_struct_as_json(imu_thread.path_measurement_dir, "info.json", info_struct)
