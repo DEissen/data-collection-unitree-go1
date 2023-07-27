@@ -1,6 +1,0 @@
-build
-scripts/logged_data
-
-*.o
-.vscode
-.clang-format
