@@ -7,12 +7,14 @@ from custom_utils.utils import save_struct_as_json, get_floor_type_from_user
 
 
 if __name__ == "__main__":
-    # variables for main
+    # configurable variables
+    measurement_base_path = "/home/eissen/measurements/data"
+    iterations_time_diff_calculation = 10
+
+    # further variables for main
     running = threading.Event()
     running.set()
-    iterations_time_diff_calculation = 10
-    info_struct = {} # struct to add all data which shall be stored in injo.json
-    measurement_base_path = "/home/eissen/measurements/data"
+    info_struct = {}  # struct to add all data which shall be stored in info.json
 
     # store date of measurement
     measurement_date = datetime.now().strftime("%d.%m.%Y")
@@ -23,43 +25,61 @@ if __name__ == "__main__":
     info_struct["floor type"] = floor_type
 
     # get time diff for all Go1 µCs and save them in the info_struct
-    time_diff_13, corrected_time_diff_13, duration_mean_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(13, "unitree", iterations_time_diff_calculation, True)
-    time_diff_14, corrected_time_diff_14, duration_mean_14, later_timestamp_14 = camera_measurement.get_average_time_diff_ms(14, "unitree", iterations_time_diff_calculation, True)
-    time_diff_15, corrected_time_diff_15, duration_mean_15, later_timestamp_15 = camera_measurement.get_average_time_diff_ms(15, "unitree", iterations_time_diff_calculation, True)
+    time_diff_13, corrected_time_diff_13, duration_mean_13, later_timestamp_13 = camera_measurement.get_average_time_diff_ms(
+        13, "unitree", iterations_time_diff_calculation, True)
+    time_diff_14, corrected_time_diff_14, duration_mean_14, later_timestamp_14 = camera_measurement.get_average_time_diff_ms(
+        14, "unitree", iterations_time_diff_calculation, True)
+    time_diff_15, corrected_time_diff_15, duration_mean_15, later_timestamp_15 = camera_measurement.get_average_time_diff_ms(
+        15, "unitree", iterations_time_diff_calculation, True)
     # time_diff_pi, corrected_time_diff_pi, duration_mean_pi, later_timestamp_pi = camera_measurement.get_average_time_diff_ms(161, "pi", iterations_time_diff_calculation, True)
 
-    info_struct["time_diff_13_in_ms"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13, "duration": duration_mean_13, "later timestamp on": later_timestamp_13}
-    info_struct["time_diff_14_in_ms"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14, "duration": duration_mean_14, "later timestamp on": later_timestamp_14}
-    info_struct["time_diff_15_in_ms"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15, "duration": duration_mean_15, "later timestamp on": later_timestamp_15}
+    info_struct["time_diff_13_in_ms"] = {"normal": time_diff_13, "corrected": corrected_time_diff_13,
+                                         "duration": duration_mean_13, "later timestamp on": later_timestamp_13}
+    info_struct["time_diff_14_in_ms"] = {"normal": time_diff_14, "corrected": corrected_time_diff_14,
+                                         "duration": duration_mean_14, "later timestamp on": later_timestamp_14}
+    info_struct["time_diff_15_in_ms"] = {"normal": time_diff_15, "corrected": corrected_time_diff_15,
+                                         "duration": duration_mean_15, "later timestamp on": later_timestamp_15}
     # info_struct["time_diff_pi_in_ms"] = {"normal": time_diff_pi, "corrected": corrected_time_diff_pi, "duration": duration_mean_pi, "later timestamp on": later_timestamp_pi}
 
     # set starting time for all threads to 30 seconds in the future
     start_time = datetime.now() + timedelta(seconds=15)
 
+    # correct the start time by the determined time diff to start all measurements at the same time
     if later_timestamp_13 == "local PC":
-        start_time_13 = start_time - timedelta(seconds=round(corrected_time_diff_13/1000, 0))
+        start_time_13 = start_time - \
+            timedelta(seconds=round(corrected_time_diff_13/1000, 0))
     elif later_timestamp_13 == "remote PC":
-        start_time_13 = start_time + timedelta(seconds=round(corrected_time_diff_13/1000, 0))
+        start_time_13 = start_time + \
+            timedelta(seconds=round(corrected_time_diff_13/1000, 0))
     if later_timestamp_14 == "local PC":
-        start_time_14 = start_time - timedelta(seconds=round(corrected_time_diff_14/1000, 0))
+        start_time_14 = start_time - \
+            timedelta(seconds=round(corrected_time_diff_14/1000, 0))
     elif later_timestamp_14 == "remote PC":
-        start_time_14 = start_time + timedelta(seconds=round(corrected_time_diff_14/1000, 0))
+        start_time_14 = start_time + \
+            timedelta(seconds=round(corrected_time_diff_14/1000, 0))
     if later_timestamp_15 == "local PC":
-        start_time_15 = start_time - timedelta(seconds=round(corrected_time_diff_15/1000, 0))
+        start_time_15 = start_time - \
+            timedelta(seconds=round(corrected_time_diff_15/1000, 0))
     elif later_timestamp_15 == "remote PC":
-        start_time_15 = start_time + timedelta(seconds=round(corrected_time_diff_15/1000, 0))
+        start_time_15 = start_time + \
+            timedelta(seconds=round(corrected_time_diff_15/1000, 0))
 
+    # format time to string to log it and to pass it to threads
     start_time_string = start_time.strftime("%H:%M:%S")
     start_time_string_13 = start_time_13.strftime("%H:%M:%S")
     start_time_string_14 = start_time_14.strftime("%H:%M:%S")
     start_time_string_15 = start_time_15.strftime("%H:%M:%S")
     info_struct["starting_time"] = start_time_string
-    
+
     # create and start all measurement threads to get all data in parallel
-    imu_thread = read_IMU.ReadImuDataGo1(running, use_LAN=True, measurement_base_path=measurement_base_path, starting_time=start_time)
-    Nano13_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(13, start_time_string_13, ))
-    Nano14_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(14, start_time_string_14, ))
-    Nano15_thread = threading.Thread(target=camera_measurement.start_camera_measurement_via_ssh, args=(15, start_time_string_15, ))
+    imu_thread = read_IMU.ReadImuDataGo1(
+        running, use_LAN=True, measurement_base_path=measurement_base_path, starting_time=start_time)
+    Nano13_thread = threading.Thread(
+        target=camera_measurement.start_camera_measurement_via_ssh, args=(13, start_time_string_13, ))
+    Nano14_thread = threading.Thread(
+        target=camera_measurement.start_camera_measurement_via_ssh, args=(14, start_time_string_14, ))
+    Nano15_thread = threading.Thread(
+        target=camera_measurement.start_camera_measurement_via_ssh, args=(15, start_time_string_15, ))
 
     # set Nano threads to deamon threads, so they will be automatically killed when imu_thread ends
     Nano13_thread.daemon = True
@@ -83,4 +103,5 @@ if __name__ == "__main__":
     info_struct["end_time"] = end_time_string
 
     # save info_struct to info.json in measurement dir
-    save_struct_as_json(imu_thread.path_measurement_dir, "info.json", info_struct)
+    save_struct_as_json(imu_thread.path_measurement_dir,
+                        "info.json", info_struct)

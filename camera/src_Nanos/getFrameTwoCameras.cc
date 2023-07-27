@@ -115,7 +115,8 @@ int main(int argc, char* argv[])
    // get starting time as argument
    if (argc < 2)
    {
-      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'. Thus program will start without delay." << std::endl;
+      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'. Thus program will start without delay."
+                << std::endl;
       skipStartTimeCalc = true;
    }
 
@@ -179,8 +180,8 @@ int main(int argc, char* argv[])
       // store image if received
       if (cam1.getStereoFrame(leftCam1, rightCam1, t))
       {
-      cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rightCam1);
-      cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Left_" + datetime.str() + ".jpg", leftCam1);
+         cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rightCam1);
+         cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Left_" + datetime.str() + ".jpg", leftCam1);
          // check if images on cam2 are also available
          if (cam2.getStereoFrame(leftCam2, rightCam2, t))
          {

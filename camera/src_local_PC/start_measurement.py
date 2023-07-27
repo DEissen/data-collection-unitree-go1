@@ -5,6 +5,7 @@ import os
 import numpy as np
 import subprocess
 
+
 def execute_command_via_ssh(ip_addr, pwd, command):
     """
         Function to start a SSH session to "unitree@<ip_addr> and uses the password <pwd>. Afterwards <command> will be executed on the connected machine and it's output printed.
@@ -23,6 +24,7 @@ def execute_command_via_ssh(ip_addr, pwd, command):
 
     client.close()
 
+
 def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
     """
         Function to start a SSH session to "unitree@192.168.123.{ip_last_segment}. Afterwards the camera measurement is started and it's output printed.
@@ -31,13 +33,13 @@ def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
     # create SSH connection
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(f"192.168.123.{ip_last_segment}", username='unitree', password="123")
+    client.connect(f"192.168.123.{ip_last_segment}",
+                   username='unitree', password="123")
 
-    
-    commands = [] # list for all commands, as they must be sent at once to keep the same shell for it
+    commands = []  # list for all commands, as they must be sent at once to keep the same shell for it
     commands.append("/home/unitree/Documents/killCameraProcesses.sh") # command to kill camera processes by executing killCameraProcesses.sh on the Nanos
     commands.append("cd /home/unitree/Unitree/sdk/UnitreeCameraSdk") # command to change directory to UnitreeCameraSdk
-    
+
     # append command to execute camera executable
     if ip_last_segment == 15:
         # Nano with IP 15 has only one camera
@@ -47,7 +49,7 @@ def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
 
     # prepare command string and execute the commands
     command_string = "; ".join(commands)
-    stdin, stdout, stderr = client.exec_command(command_string, get_pty=True) 
+    stdin, stdout, stderr = client.exec_command(command_string, get_pty=True)
 
     # print output of process
     for line in stdout:
@@ -64,17 +66,20 @@ def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source):
     """
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(f"192.168.123.{target_ip_last_segment}", username='unitree', password="123")
+    client.connect(
+        f"192.168.123.{target_ip_last_segment}", username='unitree', password="123")
 
     # prepare command string and execute the commands
     print(f"Set clock for Nano {target_ip_last_segment}")
-    stdin, stdout, stderr = client.exec_command("/home/unitree/Documents/set_time.sh", get_pty=True) 
+    stdin, stdout, stderr = client.exec_command(
+        "/home/unitree/Documents/set_time.sh", get_pty=True)
 
     # print output of process
     for line in stdout:
         print(f"Update for {target_ip_last_segment}: {line}")
 
     client.close()
+
 
 def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
     """
@@ -86,8 +91,10 @@ def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
     date_format = f'--set="$(ssh {user_time_source}@{ip_time_source} date \\"+%C%y-%m-%d %H:%M:%S\\")"'
 
     print(f"Set clock for Pi")
-    p = subprocess.Popen(["sshpass", "-p", "123", "ssh", ssh_target, "sudo", "date", date_format])
+    p = subprocess.Popen(["sshpass", "-p", "123", "ssh",
+                         ssh_target, "sudo", "date", date_format])
     sts = os.waitpid(p.pid, 0)
+
 
 def get_time_diff(ip_last_segment, remote_username, print_info=False):
     # ideas:
@@ -98,11 +105,13 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
     # create SSH session to get time from remote PC
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(f"192.168.123.{ip_last_segment}", username=remote_username, password='123')
+    client.connect(f"192.168.123.{ip_last_segment}",
+                   username=remote_username, password='123')
 
-    start_time = datetime.now() # get time on local PC
-    stdin, stdout, stderr = client.exec_command(date_format_string, get_pty=True) # get time on remote PC
-    end_time = datetime.now() # get time on local PC again to determine duration
+    start_time = datetime.now()  # get time on local PC
+    stdin, stdout, stderr = client.exec_command(
+        date_format_string, get_pty=True)  # get time on remote PC
+    end_time = datetime.now()  # get time on local PC again to determine duration
 
     # convert time of target from stdout and remove \r\n at end of line
     for line in stdout:
@@ -115,7 +124,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
 
     # calculate duration and corrected start time which will be increased by 1/3 of the duration
     duration = end_time - start_time
-    corrected_start_time = start_time #+ (duration / 3)
+    corrected_start_time = start_time  # + (duration / 3)
 
     # calculate time diff where always the earlier time must be subtracted from the later time
     if (start_time > time_of_remote) and (corrected_start_time > time_of_remote):
@@ -139,6 +148,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
 
     return time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp
 
+
 def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print_info=False):
     time_diff_ar = []
     corrected_time_diff_ar = []
@@ -151,7 +161,8 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
         time_diff, corrected_time_diff, duration, start_time, time_of_remote, later_timestamp = get_time_diff(
             ip_last_segment, remote_username)
         time_diff_ar.append(convert_timedelta_to_ms(time_diff))
-        corrected_time_diff_ar.append(convert_timedelta_to_ms(corrected_time_diff))
+        corrected_time_diff_ar.append(
+            convert_timedelta_to_ms(corrected_time_diff))
         duration_ar.append(convert_timedelta_to_ms(duration))
         start_time_ar.append(start_time)
         time_of_remote_ar.append(time_of_remote)
@@ -182,9 +193,11 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
 
     return time_diff_mean, corrected_time_diff_mean, duration_mean, evaluated_later_timestamp
 
+
 def convert_timedelta_to_ms(timedelta_to_convert: timedelta):
     # timedelta stores time split in microsecond, seconds an days -> for total ms all three must be converted to ms
     return timedelta_to_convert.microseconds/1000 + timedelta_to_convert.seconds * 1000 + timedelta_to_convert.days * 24 * 60 * 60 * 1000
+
 
 if __name__ == "__main__":
     # variables for main

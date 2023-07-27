@@ -111,7 +111,8 @@ int main(int argc, char* argv[])
    // get starting time as argument
    if (argc < 2)
    {
-      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'. Thus program will start without delay." << std::endl;
+      std::cerr << "Starting time is needed as argument in format 'HH:MM:SS'. Thus program will start without delay."
+                << std::endl;
       skipStartTimeCalc = true;
    }
 

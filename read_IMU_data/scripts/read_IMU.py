@@ -17,7 +17,7 @@ import robot_interface as sdk  # nopep8
 
 class ReadImuDataGo1(threading.Thread):
     def __init__(self, running, use_LAN, measurement_base_path, starting_time: datetime):
-        super().__init__() # call init of super class to enable usage as thread
+        super().__init__()  # call init of super class to enable usage as thread
         # initialize members
         self.runCounter = 0
         self.info_printed_once = False
@@ -52,9 +52,9 @@ class ReadImuDataGo1(threading.Thread):
         self.create_measurement_folder(measurement_base_path)
 
         if use_LAN:
-            self.ip_addr ="192.168.123.161"
+            self.ip_addr = "192.168.123.161"
         else:
-            self.ip_addr ="192.168.12.1"
+            self.ip_addr = "192.168.12.1"
 
         print(f"Start measurement with Pi {self.ip_addr}")
         self.udp = sdk.UDP(self.HIGHLEVEL, 8080, self.ip_addr, 8082)
@@ -91,8 +91,10 @@ class ReadImuDataGo1(threading.Thread):
                     if self.show_print:
                         print(f"logging for step {self.runCounter}")
                         print(f"mode = {self.state.mode}")
-                        print(f"bodyHeight = {round(self.state.bodyHeight, 6)}")
-                        print(f"footRaiseHeight = {round(self.state.footRaiseHeight, 6)}")
+                        print(
+                            f"bodyHeight = {round(self.state.bodyHeight, 6)}")
+                        print(
+                            f"footRaiseHeight = {round(self.state.footRaiseHeight, 6)}")
                         # yawSpeed = rotation speed of robot
                         print(f"yawSpeed = {round(self.state.yawSpeed, 6)}")
                         # meaning of footForce: 0 = vorne rechts; 1 = vorne links; 2 = hinten rechts; 3 = hinten links
@@ -169,15 +171,15 @@ class ReadImuDataGo1(threading.Thread):
             # convert the lists to numpy arrays and save them
             self.mode_ar = np.asarray(self.mode_ar)
             np.savetxt(os.path.join(self.mode_data_dir,
-                    f"{self.measurement_timestamp}.csv"), self.mode_ar, delimiter=";")
+                                    f"{self.measurement_timestamp}.csv"), self.mode_ar, delimiter=";")
 
             self.bodyHeight_ar = np.asarray(self.bodyHeight_ar)
             np.savetxt(os.path.join(self.bodyHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                    self.bodyHeight_ar, delimiter=";")
+                       self.bodyHeight_ar, delimiter=";")
 
             self.footRaiseHeight_ar = np.asarray(self.footRaiseHeight_ar)
             np.savetxt(os.path.join(self.footRaiseHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                    self.footRaiseHeight_ar, delimiter=";")
+                       self.footRaiseHeight_ar, delimiter=";")
 
             self.yawSpeed_ar = np.asarray(self.yawSpeed_ar)
             np.savetxt(os.path.join(
@@ -185,7 +187,7 @@ class ReadImuDataGo1(threading.Thread):
 
             self.footForce_ar = np.asarray(self.footForce_ar)
             np.savetxt(os.path.join(self.footForce_data_dir, f"{self.measurement_timestamp}.csv"),
-                    self.footForce_ar, delimiter=";")
+                       self.footForce_ar, delimiter=";")
 
             self.velocity_ar = np.asarray(self.velocity_ar)
             np.savetxt(os.path.join(
@@ -193,11 +195,11 @@ class ReadImuDataGo1(threading.Thread):
 
             self.gyroscope_ar = np.asarray(self.gyroscope_ar)
             np.savetxt(os.path.join(self.gyroscope_data_dir, f"{self.measurement_timestamp}.csv"),
-                    self.gyroscope_ar, delimiter=";")
+                       self.gyroscope_ar, delimiter=";")
 
             self.accelerometer_ar = np.asarray(self.accelerometer_ar)
             np.savetxt(os.path.join(self.accelerometer_data_dir, f"{self.measurement_timestamp}.csv"),
-                    self.accelerometer_ar, delimiter=";")
+                       self.accelerometer_ar, delimiter=";")
 
             self.rpy_ar = np.asarray(self.rpy_ar)
             np.savetxt(os.path.join(
@@ -205,7 +207,7 @@ class ReadImuDataGo1(threading.Thread):
 
             self.temperature_ar = np.asarray(self.temperature_ar)
             np.savetxt(os.path.join(self.rpy_data_dir, f"{self.measurement_timestamp}.csv"),
-                    self.temperature_ar, delimiter=";")
+                       self.temperature_ar, delimiter=";")
 
             # reset lists for next measurement
             self.mode_ar = []
@@ -256,7 +258,8 @@ if __name__ == '__main__':
     running = threading.Event()
     running.set()
 
-    imu_thread = ReadImuDataGo1(running, use_LAN=True, measurement_base_path=".", starting_time=start_time)
+    imu_thread = ReadImuDataGo1(
+        running, use_LAN=True, measurement_base_path=".", starting_time=start_time)
 
     imu_thread.start()
 
