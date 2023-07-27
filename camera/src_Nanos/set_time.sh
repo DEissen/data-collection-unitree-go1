@@ -1,0 +1,1 @@
+sudo date --set="$(ssh eissen@192.168.123.52 date \"+%C%y-%m-%d %H:%M:%S\")"
