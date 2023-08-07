@@ -124,6 +124,7 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
 
     # calculate duration and corrected start time which will be increased by 1/3 of the duration
     duration = end_time - start_time
+    # TODO: enable correction again
     corrected_start_time = start_time  # + (duration / 3)
 
     # calculate time diff where always the earlier time must be subtracted from the later time
@@ -168,6 +169,7 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
         time_of_remote_ar.append(time_of_remote)
         # check if entry for later timestamp is the same always
         if later_timestamp != evaluated_later_timestamp and evaluated_later_timestamp != "":
+            # TODO: further handle this state to update corrected time diff properly!
             evaluated_later_timestamp = "inconsistent"
         else:
             evaluated_later_timestamp = later_timestamp
