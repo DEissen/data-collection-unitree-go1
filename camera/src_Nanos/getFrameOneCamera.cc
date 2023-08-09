@@ -29,7 +29,8 @@ std::string createMeasurementDir()
 {
    // create path name based on timestamp for measurement
    auto measurement_path = getMeasurementDirName(g_base_path);
-   auto cam1Path = measurement_path + "/" + g_NameCam1;
+   auto cam1PathLeft = measurement_path + "/" + g_NameCam1 + "_Left";
+   auto cam1PathRight = measurement_path + "/" + g_NameCam1 + "_Right";
 
    // create measurement directory and report status
    if (mkdir(measurement_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
@@ -61,12 +62,13 @@ std::string createMeasurementDir()
    else
    {
       // create dir for each camera
-      mkdir(cam1Path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir(cam1PathLeft.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir(cam1PathRight.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
       std::cout << "Create measurement directory (including sub dirs) " << measurement_path << " successfully!"
                 << std::endl;
    }
 
-   return cam1Path;
+   return measurement_path;
 }
 
 std::string getCurrentLocalTime()
@@ -100,7 +102,7 @@ int calculateTimeDifference(const std::string& target_time)
 
 int main(int argc, char* argv[])
 {
-   std::string cam1Path = createMeasurementDir();
+   std::string measurement_path = createMeasurementDir();
 
    int deviceNode1 = 0;  // 0 -> /dev/video0
 
@@ -172,8 +174,8 @@ int main(int argc, char* argv[])
       datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0')
                << int(millis);
 
-      cv::imwrite(cam1Path + "/Right_" + datetime.str() + ".jpg", rightCam1);
-      cv::imwrite(cam1Path + "/Left_" + datetime.str() + ".jpg", leftCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Right/" + datetime.str() + ".jpg", rightCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Left/" + datetime.str() + ".jpg", leftCam1);
    }
 
    cam1.stopCapture();  ///< stop camera capturing

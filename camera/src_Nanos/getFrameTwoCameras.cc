@@ -30,8 +30,10 @@ std::string createMeasurementDir()
 {
    // create path name based on timestamp for measurement
    auto measurement_path = getMeasurementDirName(g_base_path);
-   auto cam1Path = measurement_path + "/" + g_NameCam1;
-   auto cam2Path = measurement_path + "/" + g_NameCam2;
+   auto cam1PathLeft = measurement_path + "/" + g_NameCam1 + "_Left";
+   auto cam1PathRight = measurement_path + "/" + g_NameCam1 + "_Right";
+   auto cam2PathLeft = measurement_path + "/" + g_NameCam2 + "_Left";
+   auto cam2PathRight = measurement_path + "/" + g_NameCam2 + "_Right";
 
    // create measurement directory and report status
    if (mkdir(measurement_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
@@ -63,8 +65,10 @@ std::string createMeasurementDir()
    else
    {
       // create dir for each camera
-      mkdir(cam1Path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-      mkdir(cam2Path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir(cam1PathLeft.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir(cam1PathRight.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir(cam2PathLeft.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir(cam2PathRight.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
       std::cout << "Create measurement directory (including sub dirs) " << measurement_path << " successfully!"
                 << std::endl;
    }
@@ -180,13 +184,13 @@ int main(int argc, char* argv[])
       // store image if received
       if (cam1.getStereoFrame(leftCam1, rightCam1, t))
       {
-         cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Right_" + datetime.str() + ".jpg", rightCam1);
-         cv::imwrite(measurement_path + "/" + g_NameCam1 + "/Left_" + datetime.str() + ".jpg", leftCam1);
+         cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Right/" + datetime.str() + ".jpg", rightCam1);
+         cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Left/" + datetime.str() + ".jpg", leftCam1);
          // check if images on cam2 are also available
          if (cam2.getStereoFrame(leftCam2, rightCam2, t))
          {
-            cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rightCam2);
-            cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
+            cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Right/" + datetime.str() + ".jpg", rightCam2);
+            cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Left/" + datetime.str() + ".jpg", leftCam2);
          }
          else
          {
@@ -195,8 +199,8 @@ int main(int argc, char* argv[])
       }
       else if (cam2.getStereoFrame(leftCam2, rightCam2, t))
       {
-         cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Right_" + datetime.str() + ".jpg", rightCam2);
-         cv::imwrite(measurement_path + "/" + g_NameCam2 + "/Left_" + datetime.str() + ".jpg", leftCam2);
+         cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Right/" + datetime.str() + ".jpg", rightCam2);
+         cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Left/" + datetime.str() + ".jpg", leftCam2);
          std::cout << "Only image cam2 was available!" << std::endl;
       }
       else
