@@ -166,6 +166,7 @@ class ReadImuDataGo1(threading.Thread):
         self.save_logs()
 
     def save_logs(self):
+        # TODO: improve this to prevent data loss during storage
         # save logs is only possible if logging was started
         if self.start_logging:
             # convert the lists to numpy arrays and save them
