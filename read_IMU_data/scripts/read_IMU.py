@@ -39,14 +39,12 @@ class ReadImuDataGo1(threading.Thread):
         # lists to log the data
         self.mode_ar = []
         self.bodyHeight_ar = []
-        self.footRaiseHeight_ar = []
         self.yawSpeed_ar = []
         self.footForce_ar = []
         self.velocity_ar = []
         self.gyroscope_ar = []
         self.accelerometer_ar = []
         self.rpy_ar = []
-        self.temperature_ar = []
 
         # create measurement directory and get paths for the sensors
         self.create_measurement_folder(measurement_base_path)
@@ -93,8 +91,6 @@ class ReadImuDataGo1(threading.Thread):
                         print(f"mode = {self.state.mode}")
                         print(
                             f"bodyHeight = {round(self.state.bodyHeight, 6)}")
-                        print(
-                            f"footRaiseHeight = {round(self.state.footRaiseHeight, 6)}")
                         # yawSpeed = rotation speed of robot
                         print(f"yawSpeed = {round(self.state.yawSpeed, 6)}")
                         # meaning of footForce: 0 = vorne rechts; 1 = vorne links; 2 = hinten rechts; 3 = hinten links
@@ -119,12 +115,10 @@ class ReadImuDataGo1(threading.Thread):
                         # rpy = Euler angle: 0 = Roll; 1 = Pitch; 2 = Yaw
                         print(
                             f"rpy: {round(self.state.imu.rpy[0], 6)}, {round(self.state.imu.rpy[1], 6)}, {round(self.state.imu.rpy[2], 6)}")
-                        print(f"temperature = {self.state.imu.temperature}")
                         print("\n")
 
                     self.mode_ar.append(self.state.mode)
                     self.bodyHeight_ar.append(self.state.bodyHeight)
-                    self.footRaiseHeight_ar.append(self.state.footRaiseHeight)
                     self.yawSpeed_ar.append(self.state.yawSpeed)
                     self.footForce_ar.append(
                         [self.state.footForce[0], self.state.footForce[1], self.state.footForce[2], self.state.footForce[3]])
@@ -136,7 +130,6 @@ class ReadImuDataGo1(threading.Thread):
                         [self.state.imu.accelerometer[0], self.state.imu.accelerometer[1], self.state.imu.accelerometer[2]])
                     self.rpy_ar.append(
                         [self.state.imu.rpy[0], self.state.imu.rpy[1], self.state.imu.rpy[2]])
-                    self.temperature_ar.append(self.state.imu.temperature)
 
                 # log in the specified interval
                 if self.start_logging and ((self.runCounter * self.sleep_in_seconds) % self.log_interval == 0):
@@ -146,7 +139,6 @@ class ReadImuDataGo1(threading.Thread):
                 self.cmd.mode = 0      # 0:idle, default stand      1:forced stand     2:walk continuously
                 self.cmd.gaitType = 0
                 self.cmd.speedLevel = 0
-                self.cmd.footRaiseHeight = 0
                 self.cmd.bodyHeight = 0
                 self.cmd.euler = [0, 0, 0]
                 self.cmd.velocity = [0, 0]
@@ -178,10 +170,6 @@ class ReadImuDataGo1(threading.Thread):
             np.savetxt(os.path.join(self.bodyHeight_data_dir, f"{self.measurement_timestamp}.csv"),
                        self.bodyHeight_ar, delimiter=";")
 
-            self.footRaiseHeight_ar = np.asarray(self.footRaiseHeight_ar)
-            np.savetxt(os.path.join(self.footRaiseHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.footRaiseHeight_ar, delimiter=";")
-
             self.yawSpeed_ar = np.asarray(self.yawSpeed_ar)
             np.savetxt(os.path.join(
                 self.yawSpeed_data_dir, f"{self.measurement_timestamp}.csv"), self.yawSpeed_ar, delimiter=";")
@@ -206,21 +194,15 @@ class ReadImuDataGo1(threading.Thread):
             np.savetxt(os.path.join(
                 self.rpy_data_dir, f"{self.measurement_timestamp}.csv"), self.rpy_ar, delimiter=";")
 
-            self.temperature_ar = np.asarray(self.temperature_ar)
-            np.savetxt(os.path.join(self.rpy_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.temperature_ar, delimiter=";")
-
             # reset lists for next measurement
             self.mode_ar = []
             self.bodyHeight_ar = []
-            self.footRaiseHeight_ar = []
             self.yawSpeed_ar = []
             self.footForce_ar = []
             self.velocity_ar = []
             self.gyroscope_ar = []
             self.accelerometer_ar = []
             self.rpy_ar = []
-            self.temperature_ar = []
 
             # get new measurement timestamp
             self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
@@ -232,29 +214,25 @@ class ReadImuDataGo1(threading.Thread):
 
         self.mode_data_dir = f"{self.path_measurement_dir}/mode"
         self.bodyHeight_data_dir = f"{self.path_measurement_dir}/bodyHeight"
-        self.footRaiseHeight_data_dir = f"{self.path_measurement_dir}/footRaiseHeight"
         self.yawSpeed_data_dir = f"{self.path_measurement_dir}/yawSpeed"
         self.footForce_data_dir = f"{self.path_measurement_dir}/footForce"
         self.velocity_data_dir = f"{self.path_measurement_dir}/velocity"
         self.gyroscope_data_dir = f"{self.path_measurement_dir}/gyroscope"
         self.accelerometer_data_dir = f"{self.path_measurement_dir}/accelerometer"
         self.rpy_data_dir = f"{self.path_measurement_dir}/rpy"
-        self.rpy_data_dir = f"{self.path_measurement_dir}/temperature"
 
         os.makedirs(self.mode_data_dir, exist_ok=True)
         os.makedirs(self.bodyHeight_data_dir, exist_ok=True)
-        os.makedirs(self.footRaiseHeight_data_dir, exist_ok=True)
         os.makedirs(self.yawSpeed_data_dir, exist_ok=True)
         os.makedirs(self.footForce_data_dir, exist_ok=True)
         os.makedirs(self.velocity_data_dir, exist_ok=True)
         os.makedirs(self.gyroscope_data_dir, exist_ok=True)
         os.makedirs(self.accelerometer_data_dir, exist_ok=True)
         os.makedirs(self.rpy_data_dir, exist_ok=True)
-        os.makedirs(self.rpy_data_dir, exist_ok=True)
 
 
 if __name__ == '__main__':
-    start_time = datetime.now() + timedelta(seconds=5)
+    start_time = datetime.now() + timedelta(seconds=1)
 
     running = threading.Event()
     running.set()
