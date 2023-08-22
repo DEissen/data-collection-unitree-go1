@@ -127,9 +127,6 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
             - time_of_remote (datetime.datetime): Time of remote system
             - later_timestamp (str): Name of the later timestamp
     """
-    # ideas:
-    #  - correct time diff by duration, e.g. add 1/3 of duration to start_time
-    #  - determine time_diff for multiple times (e.g. 10 times), as result is not always the same
     date_format_string ='date +"%C%y-%m-%d %T.%6N"' # format string for date shell command
 
     # create SSH session to get time from remote PC
@@ -271,7 +268,6 @@ if __name__ == "__main__":
     #     set_time_via_ssh_for_Nano(15, user_time_source, ip_time_source)
     #     set_time_via_ssh_for_PI(user_time_source, ip_time_source)
 
-    # TODO: do someting with time_diff, most likely log it and correct timestamps afterwards
     time_diff_13, corrected_time_diff_13, duration_mean_13, later_timestamp_13 = get_average_time_diff_ms(
         13, "unitree", iterations_time_diff_calculation, True)
     time_diff_14, corrected_time_diff_14, duration_mean_14, later_timestamp_14 = get_average_time_diff_ms(
