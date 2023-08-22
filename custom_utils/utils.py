@@ -1,11 +1,25 @@
 import json
 from os import path
 
-def save_struct_as_json(path_measurement_dir, filename, struct_to_save):
+def save_struct_as_json(path_measurement_dir, filename, dict_to_save):
+    """
+        Util function to save the dict dict_to_save as filename at path_measurement_dir.
+
+        Parameters:
+            - path_measurement_dir (str): Path to measurement dir where file shall be saved
+            - filename (str): String with the filename for the JSON file
+            - dict_to_save (dict): Dict which shall be saved in JSON format
+    """
     with open(path.join(path_measurement_dir, filename), "w") as fp:
-        json.dump(struct_to_save, fp, indent=3)
+        json.dump(dict_to_save, fp, indent=3)
 
 def get_floor_type_from_user():
+    """
+        Util function to let the user select a floor type by typing number in the console.
+
+        Returns:
+            - floor_type (str): String with the selected floor type
+    """
     floor_types = ["invalid", "grass", "gravel", "vinyl flooring", "tiles"]
     not_determined_yet = True
 

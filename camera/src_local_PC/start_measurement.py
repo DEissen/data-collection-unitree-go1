@@ -118,6 +118,14 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
             - ip_last_segment (int): Last number of the IPv4 address for the SSH connection
             - user_time_source (str): Username of th SSH host for whom time diff shall be evaluated
             - print_info (bool): Default = False. If set to True, result will be printed to console
+
+        Returns:
+            - time_diff (float): Time diff
+            - corrected_time_diff (float):Corrected time diff (considering duration of the execution)
+            - duration (float): Duration of the measurement
+            - start_time (datetime.datetime): Time of local system at beginning
+            - time_of_remote (datetime.datetime): Time of remote system
+            - later_timestamp (str): Name of the later timestamp
     """
     # ideas:
     #  - correct time diff by duration, e.g. add 1/3 of duration to start_time
@@ -181,6 +189,12 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
             - remote_username (str): Username of th SSH host for whom time diff shall be evaluated
             - iterations (int): Number of iterations how often the time diff shall be determined for averaging
             - print_info (bool): Default = False. If set to True, result will be printed to console
+
+        Returns:
+            - time_diff_mean (float): Average time diff
+            - corrected_time_diff_mean (float): Average of corrected time diff (considering duration of the execution)
+            - duration_mean (float): Average of the duration of the measurement
+            - evaluated_later_timestamp (str): Name of the later timestamp
     """
     time_diff_ar = []
     corrected_time_diff_ar = []
@@ -233,6 +247,9 @@ def convert_timedelta_to_ms(timedelta_to_convert: timedelta):
 
         Parameters:
             - timedelta_to_convert (datetime.timedelta): Timedelta to convert
+
+        Returns:
+            - (float) Number of total milliseconds of timedelta to convert
     """
     # timedelta stores time split in microsecond, seconds an days -> for total ms all three must be converted to ms
     return timedelta_to_convert.microseconds/1000 + timedelta_to_convert.seconds * 1000 + timedelta_to_convert.days * 24 * 60 * 60 * 1000
