@@ -9,6 +9,11 @@ import subprocess
 def execute_command_via_ssh(ip_addr, pwd, command):
     """
         Function to start a SSH session to "unitree@<ip_addr> and uses the password <pwd>. Afterwards <command> will be executed on the connected machine and it's output printed.
+
+        Parameters:
+            - ip_addr (str): IPv4 address of the SHH host
+            - pwd (str): Password for the user "unitree" of ip_addr
+            - command (str): Command to execute via SSH
     """
     # create SSH connection
     client = paramiko.SSHClient()
@@ -29,6 +34,10 @@ def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
     """
         Function to start a SSH session to "unitree@192.168.123.{ip_last_segment}. Afterwards the camera measurement is started and it's output printed.
         NOTE: The triggered processes will be automatically ended in case the SSH connection is closed
+
+        Parameters:
+            - ip_last_segment (int): Last number of the IPv4 address for the SSH connection
+            - starting_time_string (str): String containing the starting timestamp for the camera program 
     """
     # create SSH connection
     client = paramiko.SSHClient()
@@ -58,11 +67,13 @@ def start_camera_measurement_via_ssh(ip_last_segment, starting_time_string):
     client.close()
 
 
-def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source):
+def set_time_via_ssh_for_Nano(target_ip_last_segment):
     """
-        NOT WORKING YET!! due to missing possiblity to provide passwords!
-        TODO: Update docstring
+        NOT WORKING YET!! due to missing possibility to provide passwords!
         NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
+
+        Parameters:
+            - target_ip_last_segment (int): Last number of the IPv4 address for the SSH connection
     """
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -84,8 +95,11 @@ def set_time_via_ssh_for_Nano(target_ip_last_segment, user_time_source):
 def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
     """
         NOT WORKING YET!! due to missing possiblity to provide passwords!
-        TODO: Update docstring
         NOTE: Your system must be able to ping the Nano directly (connected via LAN)!
+
+        Parameters:
+            - user_time_source (str): Username of th SSH host to get the current time from
+            - ip_time_source (str): IPv4 address of the SHH host to get the current time from
     """
     ssh_target = f"pi@192.168.123.161"
     date_format = f'--set="$(ssh {user_time_source}@{ip_time_source} date \\"+%C%y-%m-%d %H:%M:%S\\")"'
@@ -97,6 +111,14 @@ def set_time_via_ssh_for_PI(user_time_source, ip_time_source):
 
 
 def get_time_diff(ip_last_segment, remote_username, print_info=False):
+    """
+        Function to get the time diff between two systems by getting time via SSH connection.
+
+        Parameters:
+            - ip_last_segment (int): Last number of the IPv4 address for the SSH connection
+            - user_time_source (str): Username of th SSH host for whom time diff shall be evaluated
+            - print_info (bool): Default = False. If set to True, result will be printed to console
+    """
     # ideas:
     #  - correct time diff by duration, e.g. add 1/3 of duration to start_time
     #  - determine time_diff for multiple times (e.g. 10 times), as result is not always the same
@@ -151,6 +173,15 @@ def get_time_diff(ip_last_segment, remote_username, print_info=False):
 
 
 def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print_info=False):
+    """
+        Function to get the average time diff between two systems by getting time via SSH connection.
+
+        Parameters:
+            - ip_last_segment (int): Last number of the IPv4 address for the SSH connection
+            - remote_username (str): Username of th SSH host for whom time diff shall be evaluated
+            - iterations (int): Number of iterations how often the time diff shall be determined for averaging
+            - print_info (bool): Default = False. If set to True, result will be printed to console
+    """
     time_diff_ar = []
     corrected_time_diff_ar = []
     duration_ar = []
@@ -197,6 +228,12 @@ def get_average_time_diff_ms(ip_last_segment, remote_username, iterations, print
 
 
 def convert_timedelta_to_ms(timedelta_to_convert: timedelta):
+    """
+        Function to convert a datetime.timedelta object in the number of milliseconds
+
+        Parameters:
+            - timedelta_to_convert (datetime.timedelta): Timedelta to convert
+    """
     # timedelta stores time split in microsecond, seconds an days -> for total ms all three must be converted to ms
     return timedelta_to_convert.microseconds/1000 + timedelta_to_convert.seconds * 1000 + timedelta_to_convert.days * 24 * 60 * 60 * 1000
 
