@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
       // get images or wait if they are not present yet
       cv::Mat leftCam1, rightCam1;
       std::chrono::microseconds t;
-      if (!cam1.getStereoFrame(leftCam1, rightCam1, t))
+      if (!cam1.getStereoFrame(rightCam1, leftCam1, t))
       {  ///< get camera raw image
          usleep(1000);
          continue;

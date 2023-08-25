@@ -182,12 +182,12 @@ int main(int argc, char* argv[])
                << int(millis);
 
       // store image if received
-      if (cam1.getStereoFrame(leftCam1, rightCam1, t))
+      if (cam1.getStereoFrame(rightCam1, leftCam1, t))
       {
          cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Right/" + datetime.str() + ".jpg", rightCam1);
          cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Left/" + datetime.str() + ".jpg", leftCam1);
          // check if images on cam2 are also available
-         if (cam2.getStereoFrame(leftCam2, rightCam2, t))
+         if (cam2.getStereoFrame(rightCam2, leftCam2, t))
          {
             cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Right/" + datetime.str() + ".jpg", rightCam2);
             cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Left/" + datetime.str() + ".jpg", leftCam2);
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
             std::cout << "Only image cam1 was available!" << std::endl;
          }
       }
-      else if (cam2.getStereoFrame(leftCam2, rightCam2, t))
+      else if (cam2.getStereoFrame(rightCam2, leftCam2, t))
       {
          cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Right/" + datetime.str() + ".jpg", rightCam2);
          cv::imwrite(measurement_path + "/" + g_NameCam2 + "_Left/" + datetime.str() + ".jpg", leftCam2);

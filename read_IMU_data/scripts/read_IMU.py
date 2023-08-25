@@ -39,14 +39,22 @@ class ReadImuDataGo1(threading.Thread):
         # lists to log the data
         self.mode_ar = []
         self.bodyHeight_ar = []
-        self.footRaiseHeight_ar = []
         self.yawSpeed_ar = []
         self.footForce_ar = []
         self.velocity_ar = []
         self.gyroscope_ar = []
         self.accelerometer_ar = []
         self.rpy_ar = []
-        self.temperature_ar = []
+
+        # list of lists to store the data at the end
+        self.mode_storage_dict = {}
+        self.bodyHeight_storage_dict = {}
+        self.yawSpeed_storage_dict = {}
+        self.footForce_storage_dict = {}
+        self.velocity_storage_dict = {}
+        self.gyroscope_storage_dict = {}
+        self.accelerometer_storage_dict = {}
+        self.rpy_storage_dict = {}
 
         # create measurement directory and get paths for the sensors
         self.create_measurement_folder(measurement_base_path)
@@ -82,7 +90,8 @@ class ReadImuDataGo1(threading.Thread):
                     print(f"bandwidth = {self.state.bandWidth}")
                     print(f"crc = {self.state.crc}")
                     self.info_printed_once = True
-                    self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
+                    self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[
+                        :-3]
                     self.start_logging = True
                     print("\nIMU measurement starts now\n")
 
@@ -93,8 +102,6 @@ class ReadImuDataGo1(threading.Thread):
                         print(f"mode = {self.state.mode}")
                         print(
                             f"bodyHeight = {round(self.state.bodyHeight, 6)}")
-                        print(
-                            f"footRaiseHeight = {round(self.state.footRaiseHeight, 6)}")
                         # yawSpeed = rotation speed of robot
                         print(f"yawSpeed = {round(self.state.yawSpeed, 6)}")
                         # meaning of footForce: 0 = vorne rechts; 1 = vorne links; 2 = hinten rechts; 3 = hinten links
@@ -119,12 +126,10 @@ class ReadImuDataGo1(threading.Thread):
                         # rpy = Euler angle: 0 = Roll; 1 = Pitch; 2 = Yaw
                         print(
                             f"rpy: {round(self.state.imu.rpy[0], 6)}, {round(self.state.imu.rpy[1], 6)}, {round(self.state.imu.rpy[2], 6)}")
-                        print(f"temperature = {self.state.imu.temperature}")
                         print("\n")
 
                     self.mode_ar.append(self.state.mode)
                     self.bodyHeight_ar.append(self.state.bodyHeight)
-                    self.footRaiseHeight_ar.append(self.state.footRaiseHeight)
                     self.yawSpeed_ar.append(self.state.yawSpeed)
                     self.footForce_ar.append(
                         [self.state.footForce[0], self.state.footForce[1], self.state.footForce[2], self.state.footForce[3]])
@@ -136,17 +141,15 @@ class ReadImuDataGo1(threading.Thread):
                         [self.state.imu.accelerometer[0], self.state.imu.accelerometer[1], self.state.imu.accelerometer[2]])
                     self.rpy_ar.append(
                         [self.state.imu.rpy[0], self.state.imu.rpy[1], self.state.imu.rpy[2]])
-                    self.temperature_ar.append(self.state.imu.temperature)
 
                 # log in the specified interval
                 if self.start_logging and ((self.runCounter * self.sleep_in_seconds) % self.log_interval == 0):
-                    self.save_logs()
+                    self.store_log_to_dats_dicts()
 
                 # prepare and send high level command to do nothing!
                 self.cmd.mode = 0      # 0:idle, default stand      1:forced stand     2:walk continuously
                 self.cmd.gaitType = 0
                 self.cmd.speedLevel = 0
-                self.cmd.footRaiseHeight = 0
                 self.cmd.bodyHeight = 0
                 self.cmd.euler = [0, 0, 0]
                 self.cmd.velocity = [0, 0]
@@ -162,67 +165,78 @@ class ReadImuDataGo1(threading.Thread):
             else:
                 time.sleep(self.sleep_in_seconds)
 
-        # save logs in case running is not set anymore by external source to not miss any data
-        self.save_logs()
+        # store data persistently in case running is not set anymore by external source to not miss any data
+        self.store_log_to_dats_dicts()
+        self.store_data_persistently()
 
-    def save_logs(self):
-        # save logs is only possible if logging was started
+    def store_log_to_dats_dicts(self):
+        # storing of logs is only possible if logging was started
         if self.start_logging:
-            # convert the lists to numpy arrays and save them
+            # convert the lists to numpy arrays and save them in storage dicts
             self.mode_ar = np.asarray(self.mode_ar)
-            np.savetxt(os.path.join(self.mode_data_dir,
-                                    f"{self.measurement_timestamp}.csv"), self.mode_ar, delimiter=";")
+            self.mode_storage_dict[self.measurement_timestamp] = self.mode_ar
 
             self.bodyHeight_ar = np.asarray(self.bodyHeight_ar)
-            np.savetxt(os.path.join(self.bodyHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.bodyHeight_ar, delimiter=";")
-
-            self.footRaiseHeight_ar = np.asarray(self.footRaiseHeight_ar)
-            np.savetxt(os.path.join(self.footRaiseHeight_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.footRaiseHeight_ar, delimiter=";")
+            self.bodyHeight_storage_dict[self.measurement_timestamp] = self.bodyHeight_ar
 
             self.yawSpeed_ar = np.asarray(self.yawSpeed_ar)
-            np.savetxt(os.path.join(
-                self.yawSpeed_data_dir, f"{self.measurement_timestamp}.csv"), self.yawSpeed_ar, delimiter=";")
+            self.yawSpeed_storage_dict[self.measurement_timestamp] = self.yawSpeed_ar
 
             self.footForce_ar = np.asarray(self.footForce_ar)
-            np.savetxt(os.path.join(self.footForce_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.footForce_ar, delimiter=";")
+            self.footForce_storage_dict[self.measurement_timestamp] = self.footForce_ar
 
             self.velocity_ar = np.asarray(self.velocity_ar)
-            np.savetxt(os.path.join(
-                self.velocity_data_dir, f"{self.measurement_timestamp}.csv"), self.velocity_ar, delimiter=";")
+            self.velocity_storage_dict[self.measurement_timestamp] = self.velocity_ar
 
             self.gyroscope_ar = np.asarray(self.gyroscope_ar)
-            np.savetxt(os.path.join(self.gyroscope_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.gyroscope_ar, delimiter=";")
+            self.gyroscope_storage_dict[self.measurement_timestamp] = self.gyroscope_ar
 
             self.accelerometer_ar = np.asarray(self.accelerometer_ar)
-            np.savetxt(os.path.join(self.accelerometer_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.accelerometer_ar, delimiter=";")
+            self.accelerometer_storage_dict[self.measurement_timestamp] = self.accelerometer_ar
 
             self.rpy_ar = np.asarray(self.rpy_ar)
-            np.savetxt(os.path.join(
-                self.rpy_data_dir, f"{self.measurement_timestamp}.csv"), self.rpy_ar, delimiter=";")
-
-            self.temperature_ar = np.asarray(self.temperature_ar)
-            np.savetxt(os.path.join(self.rpy_data_dir, f"{self.measurement_timestamp}.csv"),
-                       self.temperature_ar, delimiter=";")
+            self.rpy_storage_dict[self.measurement_timestamp] = self.rpy_ar
 
             # reset lists for next measurement
             self.mode_ar = []
             self.bodyHeight_ar = []
-            self.footRaiseHeight_ar = []
             self.yawSpeed_ar = []
             self.footForce_ar = []
             self.velocity_ar = []
             self.gyroscope_ar = []
             self.accelerometer_ar = []
             self.rpy_ar = []
-            self.temperature_ar = []
 
             # get new measurement timestamp
-            self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[:-3]
+            self.measurement_timestamp = datetime.now().strftime("%H_%M_%S_%f")[
+                :-3]
+
+    def store_data_persistently(self):
+        # store data to csv files for all keys in the storage dicts
+        for _, timestamp in enumerate(self.mode_storage_dict.keys()):
+            np.savetxt(os.path.join(self.mode_data_dir,
+                                    f"{timestamp}.csv"), self.mode_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(self.bodyHeight_data_dir,
+                       f"{timestamp}.csv"), self.bodyHeight_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(self.yawSpeed_data_dir,
+                       f"{timestamp}.csv"), self.yawSpeed_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(self.footForce_data_dir,
+                       f"{timestamp}.csv"), self.footForce_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(self.velocity_data_dir,
+                       f"{timestamp}.csv"), self.velocity_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(self.gyroscope_data_dir,
+                       f"{timestamp}.csv"), self.gyroscope_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(self.accelerometer_data_dir,
+                       f"{timestamp}.csv"), self.accelerometer_storage_dict[timestamp], delimiter=";")
+
+            np.savetxt(os.path.join(
+                self.rpy_data_dir, f"{timestamp}.csv"), self.rpy_storage_dict[timestamp], delimiter=";")
 
     def create_measurement_folder(self, measurement_base_path):
         # create folder for results (if it does not exist yet)
@@ -231,29 +245,25 @@ class ReadImuDataGo1(threading.Thread):
 
         self.mode_data_dir = f"{self.path_measurement_dir}/mode"
         self.bodyHeight_data_dir = f"{self.path_measurement_dir}/bodyHeight"
-        self.footRaiseHeight_data_dir = f"{self.path_measurement_dir}/footRaiseHeight"
         self.yawSpeed_data_dir = f"{self.path_measurement_dir}/yawSpeed"
         self.footForce_data_dir = f"{self.path_measurement_dir}/footForce"
         self.velocity_data_dir = f"{self.path_measurement_dir}/velocity"
         self.gyroscope_data_dir = f"{self.path_measurement_dir}/gyroscope"
         self.accelerometer_data_dir = f"{self.path_measurement_dir}/accelerometer"
         self.rpy_data_dir = f"{self.path_measurement_dir}/rpy"
-        self.rpy_data_dir = f"{self.path_measurement_dir}/temperature"
 
         os.makedirs(self.mode_data_dir, exist_ok=True)
         os.makedirs(self.bodyHeight_data_dir, exist_ok=True)
-        os.makedirs(self.footRaiseHeight_data_dir, exist_ok=True)
         os.makedirs(self.yawSpeed_data_dir, exist_ok=True)
         os.makedirs(self.footForce_data_dir, exist_ok=True)
         os.makedirs(self.velocity_data_dir, exist_ok=True)
         os.makedirs(self.gyroscope_data_dir, exist_ok=True)
         os.makedirs(self.accelerometer_data_dir, exist_ok=True)
         os.makedirs(self.rpy_data_dir, exist_ok=True)
-        os.makedirs(self.rpy_data_dir, exist_ok=True)
 
 
 if __name__ == '__main__':
-    start_time = datetime.now() + timedelta(seconds=5)
+    start_time = datetime.now() + timedelta(seconds=1)
 
     running = threading.Event()
     running.set()
