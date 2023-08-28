@@ -29,8 +29,8 @@ std::string createMeasurementDir()
 {
    // create path name based on timestamp for measurement
    auto measurement_path = getMeasurementDirName(g_base_path);
-   auto cam1PathLeft = measurement_path + "/" + g_NameCam1 + "_Left";
-   auto cam1PathRight = measurement_path + "/" + g_NameCam1 + "_Right";
+   auto cam1PathLeft = measurement_path + "/" + g_NameCam1 + "Left";
+   auto cam1PathRight = measurement_path + "/" + g_NameCam1 + "Right";
 
    // create measurement directory and report status
    if (mkdir(measurement_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
@@ -174,8 +174,8 @@ int main(int argc, char* argv[])
       datetime << std::put_time(std::localtime(&in_time_t), "%H_%M_%S_") << std::setw(3) << std::setfill('0')
                << int(millis);
 
-      cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Right/" + datetime.str() + ".jpg", rightCam1);
-      cv::imwrite(measurement_path + "/" + g_NameCam1 + "_Left/" + datetime.str() + ".jpg", leftCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "Right/" + datetime.str() + ".jpg", rightCam1);
+      cv::imwrite(measurement_path + "/" + g_NameCam1 + "Left/" + datetime.str() + ".jpg", leftCam1);
    }
 
    cam1.stopCapture();  ///< stop camera capturing
