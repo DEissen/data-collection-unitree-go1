@@ -19,9 +19,11 @@ This section explains how to use the code in this repo for creating new measurem
             - \home\unitree\Documents\set_time.sh
     - It's recommended to update the files directly on the Nano's, that way you don't have to copy the files there afterwards.
     - After modifying the user and the IP-address for your PC, you only need to execute the script on each Nano.
-2. Kill running default camera processes to enable custom program to run.
+    - **Note:** This is only possible on a native Linux machine, as SSH connection to WSL is only possible with some further changes in your Windows system!
+2. **[Optional]** Kill running default camera processes to enable custom program to run.
     - Execute the shell script killCameraProcesses.sh on each Nano, which can be found here:
         - \home\unitree\Documents\killCameraProcesses.sh
+    - This is optional, as this always happens when starting the measurement using main.py or main.sh
 ### Start new measurement
 1. Prepare ./camera/src_local_PC/copy_images.py
     - Potentially modify the variable "destination" which contains the path to the dir, where the measurement results will be stored.
