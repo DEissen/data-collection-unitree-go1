@@ -20,7 +20,7 @@ def get_floor_type_from_user():
         Returns:
             - floor_type (str): String with the selected floor type
     """
-    floor_types = ["invalid", "grass", "gravel", "vinyl flooring", "tiles"]
+    floor_types = ["invalid", "parquet", "outdoor", "vinyl flooring", "tiles"]
     not_determined_yet = True
 
     while not_determined_yet:
