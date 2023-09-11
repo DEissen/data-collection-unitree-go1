@@ -75,9 +75,33 @@ This module contains a file to retrieved data from the Go1 via a ROS Node. \
 *NOTE:* Currently not used by the main program.
     - *pointCloud_Subscriber_Node.py:* Functions for ROS Subscriber Nodes to read PointClouds.
 - *copy_images.sh:* Shell script to execute *./camera/src_local_PC/copy_images.py* from top level of repository.
+- *example_data.png*: Image showhing example data for README.md
 - *main.py:* Code to start a measurement of IMU data and camera images in parallel including determination of time diff and storage of label information.
 - *main.sh:* Shell script to execute *main.py* and *./camera/src_local_PC/copy_images.py* subsequently, to execute complete measurement including copying the images from the Nano's.
 - *README.md*: The file you are reading right now :)
+# Supported sensors and example data
+Here is a full list of the sensors for which data will be recorded after proper preparation of the Go1:
+- accelerometer
+- BellyCamLeft
+- BellyCamRight
+- bodyHeight
+- ChinCamLeft
+- ChinCamRight
+- footForce
+- gyroscope
+- HeadCamLeft
+- HeadCamRight
+- LeftCamLeft
+- LeftCamRight
+- mode
+- RightCamLeft
+- RightCamRight
+- rpy
+- velocity
+- yawSpeed
+
+Here is an example of the camera images and the corresponding accelerometer for a measurement:
+![Example data](./example_data.png)
 
 # Authors
 - Dominik Eißen (st177975@stud.uni-stuttgart.de)
