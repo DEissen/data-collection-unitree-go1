@@ -1,5 +1,5 @@
-# Unitree-Go1-Edu repository
-This repository contains the code to derive data from all cameras and the IMU (including foot force, ...) of the Unitree Go1 robot dog. \
+# Data collection with the Unitree Go1
+This repository contains the code to derive data from all cameras and the IMU (including foot force, ...) of the [Unitree Go1 robot dog](https://www.unitree.com/go1/). \
 It consists of four modules where three contain the code for specific sensors while the fourth module contains some custom util functions for this project. On the top level of the repository there are two shell scripts and one python file to record in parallel images with all cameras and collect the data from the IMU (including all the other timeseries sensors, e.g. foot force) of the Go1 including automated copying of the images to the local PC. For more details about how to start a measurement and about all modules see the following chapters. 
 
 # How to use the code to create a measurement with the Go1?
