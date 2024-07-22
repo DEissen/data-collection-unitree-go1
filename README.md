@@ -103,5 +103,6 @@ Here is a full list of the sensors for which data will be recorded after proper 
 Here is an example of the camera images and the corresponding accelerometer data for a measurement:
 ![Example data](./example_data.png)
 
+
 # Authors
 - Dominik Eißen (st177975@stud.uni-stuttgart.de)
