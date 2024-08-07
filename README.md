@@ -76,6 +76,7 @@ This module contains a file to retrieved data from the Go1 via a ROS Node. \
     - *pointCloud_Subscriber_Node.py:* Functions for ROS Subscriber Nodes to read PointClouds.
 - *copy_images.sh:* Shell script to execute *./camera/src_local_PC/copy_images.py* from top level of repository.
 - *example_data.png*: Image showing example data for README.md
+- *LICENSE.txt*: License file
 - *main.py:* Code to start a measurement of IMU data and camera images in parallel including determination of time diff and storage of label information.
 - *main.sh:* Shell script to execute *main.py* and *./camera/src_local_PC/copy_images.py* subsequently, to execute complete measurement including copying the images from the Nano's.
 - *README.md*: The file you are reading right now :)
